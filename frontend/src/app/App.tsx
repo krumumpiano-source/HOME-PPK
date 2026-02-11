@@ -242,7 +242,7 @@ export default function App() {
 function PageContent({ page, user, navigateTo }: { page: PageId; user: any; navigateTo: (p: PageId) => void }) {
   switch (page) {
     case 'dashboard': return <DashboardPage user={user} navigateTo={navigateTo} />;
-    case 'payments': return <DataPage title="ยอดชำระ / ส่งสลิป" fetchFn={() => getPaymentSlips()} columns={['id','residentId','amount','status','createdAt']} labels={['#','รหัสผู้พัก','จำนวนเงิน','สถานะ','วันที่']} />;
+    case 'payments': return <PaymentsPage user={user} />;
     case 'monthly-bill': return <DataPage title="แจ้งยอดชำระประจำเดือน" fetchFn={getBills} columns={['id','residentId','water','electric','commonFee','total','status']} labels={['#','รหัสผู้พัก','ค่าน้ำ','ค่าไฟ','ค่าส่วนกลาง','รวม','สถานะ']} />;
     case 'payment-history': return <DataPage title="ประวัติการชำระ" fetchFn={() => getPaymentSlips()} columns={['id','residentId','amount','status','verifiedAt']} labels={['#','รหัสผู้พัก','จำนวนเงิน','สถานะ','วันที่ตรวจ']} />;
     case 'slip-verify': return <DataPage title="ตรวจสลิป" fetchFn={() => getPaymentSlips()} columns={['id','residentId','amount','imageUrl','status']} labels={['#','รหัสผู้พัก','จำนวนเงิน','รูปสลิป','สถานะ']} />;
@@ -341,6 +341,325 @@ function StatCard({ label, value, icon }: { label: string; value: string | numbe
       </div>
       <p className="text-2xl font-bold text-gray-800">{value}</p>
       <p className="text-xs text-gray-500 mt-1">{label}</p>
+    </div>
+  );
+}
+
+// ============ Payments Page (ยอดชำระ / ส่งสลิป) ============
+function PaymentsPage({ user }: { user: any }) {
+  const [bills, setBills] = useState<any[]>([]);
+  const [payments, setPayments] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [showSlipModal, setShowSlipModal] = useState(false);
+  const [selectedBill, setSelectedBill] = useState<any>(null);
+  const [slipImage, setSlipImage] = useState('');
+  const [slipAmount, setSlipAmount] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [submitSuccess, setSubmitSuccess] = useState(false);
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const loadData = async () => {
+    setLoading(true);
+    try {
+      const [billRes, payRes] = await Promise.all([
+        getBills(),
+        callGasApi('payments' + (user?.id ? `?residentId=${user.id}` : '')),
+      ]);
+      if (billRes.success) setBills(billRes.data || []);
+      if (payRes.success) setPayments(payRes.data || []);
+    } catch { /* ignore */ }
+    setLoading(false);
+  };
+
+  // Get payment status for a bill
+  const getPaymentForBill = (billId: string) => {
+    return payments.find(p => p.billId === billId);
+  };
+
+  // Calculate overdue days
+  const getOverdueDays = (dueDate: string) => {
+    if (!dueDate) return 0;
+    const due = new Date(dueDate);
+    const today = new Date();
+    const diff = Math.floor((today.getTime() - due.getTime()) / (1000 * 60 * 60 * 24));
+    return diff > 0 ? diff : 0;
+  };
+
+  // Status display helper
+  const getStatusInfo = (bill: any) => {
+    const payment = getPaymentForBill(bill.id);
+    if (payment?.status === 'paid' || payment?.status === 'approved') {
+      return { label: 'ชำระเสร็จสิ้น', color: 'bg-green-100 text-green-700', icon: '✅' };
+    }
+    if (payment?.status === 'pending') {
+      return { label: 'รอตรวจสอบ', color: 'bg-yellow-100 text-yellow-700', icon: '⏳' };
+    }
+    if (bill.status === 'paid' || bill.status === 'approved') {
+      return { label: 'ชำระเสร็จสิ้น', color: 'bg-green-100 text-green-700', icon: '✅' };
+    }
+    const overdue = getOverdueDays(bill.due_date);
+    if (overdue > 0) {
+      return { label: `เกินกำหนด ${overdue} วัน`, color: 'bg-red-100 text-red-700', icon: '🔴' };
+    }
+    return { label: 'รอชำระ', color: 'bg-orange-100 text-orange-700', icon: '💳' };
+  };
+
+  const canSubmitSlip = (bill: any) => {
+    const payment = getPaymentForBill(bill.id);
+    return !payment || (payment.status !== 'pending' && payment.status !== 'paid' && payment.status !== 'approved');
+  };
+
+  const openSlipModal = (bill: any) => {
+    setSelectedBill(bill);
+    setSlipAmount(bill.total_amount || bill.total || '');
+    setSlipImage('');
+    setSubmitSuccess(false);
+    setShowSlipModal(true);
+  };
+
+  const handleSubmitSlip = async () => {
+    if (!selectedBill || !slipAmount) return;
+    setSubmitting(true);
+    try {
+      const res = await callGasApi('payments', {
+        method: 'POST',
+        data: {
+          residentId: user?.id || user?.email || '1',
+          billId: selectedBill.id,
+          amount: slipAmount,
+          imageUrl: slipImage || 'slip-attached',
+          residentEmail: user?.email,
+        },
+      });
+      if (res.success) {
+        setSubmitSuccess(true);
+        await loadData();
+      }
+    } catch { /* ignore */ }
+    setSubmitting(false);
+  };
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Convert to base64 preview (in production, upload to cloud storage)
+      const reader = new FileReader();
+      reader.onload = () => setSlipImage(reader.result as string);
+      reader.readAsDataURL(file);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="bg-white rounded-xl p-12 text-center">
+        <div className="animate-spin w-8 h-8 border-4 border-blue-200 border-t-blue-600 rounded-full mx-auto mb-3"></div>
+        <p className="text-gray-500 text-sm">กำลังโหลดยอดชำระ...</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <h2 className="text-lg font-bold text-gray-800">ยอดชำระ / ส่งสลิป</h2>
+        <button onClick={loadData} className="px-3 py-1.5 text-xs bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+          🔄 รีเฟรช
+        </button>
+      </div>
+
+      {/* Bills List */}
+      {bills.length === 0 ? (
+        <div className="bg-white rounded-xl p-12 text-center">
+          <span className="text-4xl block mb-3">🎉</span>
+          <p className="text-gray-600 font-medium">ไม่มียอดค้างชำระ</p>
+          <p className="text-xs text-gray-400 mt-1">ยอดชำระจะแสดงเมื่อมีการออกบิลประจำเดือน</p>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {bills.map((bill) => {
+            const status = getStatusInfo(bill);
+            const overdue = getOverdueDays(bill.due_date);
+            const canSubmit = canSubmitSlip(bill);
+            const payment = getPaymentForBill(bill.id);
+
+            return (
+              <div key={bill.id} className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                {/* Bill Header */}
+                <div className="p-4">
+                  <div className="flex items-start justify-between mb-3">
+                    <div>
+                      <h4 className="font-bold text-gray-800">บิลรอบ {bill.period || '—'}</h4>
+                      <p className="text-xs text-gray-400 mt-0.5">บิล #{bill.id} | กำหนดชำระ: {bill.due_date || '—'}</p>
+                    </div>
+                    <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${status.color}`}>
+                      {status.icon} {status.label}
+                    </span>
+                  </div>
+
+                  {/* Overdue Warning */}
+                  {overdue > 0 && !payment && (
+                    <div className="mb-3 p-2.5 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2">
+                      <span className="text-red-500 text-sm">⚠️</span>
+                      <p className="text-xs text-red-600 font-medium">เกินกำหนดชำระมาแล้ว {overdue} วัน กรุณาชำระโดยเร็ว</p>
+                    </div>
+                  )}
+
+                  {/* Amount Breakdown */}
+                  <div className="bg-gray-50 rounded-lg p-3 space-y-1.5">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-500">💧 ค่าน้ำ</span>
+                      <span className="font-medium">฿{Number(bill.water_amount || 0).toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-500">⚡ ค่าไฟ</span>
+                      <span className="font-medium">฿{Number(bill.electricity_amount || 0).toLocaleString()}</span>
+                    </div>
+                    <div className="border-t border-gray-200 pt-1.5 flex justify-between text-sm">
+                      <span className="font-bold text-gray-700">รวมทั้งหมด</span>
+                      <span className="font-bold text-blue-600 text-base">฿{Number(bill.total_amount || 0).toLocaleString()}</span>
+                    </div>
+                  </div>
+
+                  {/* Payment Info (if submitted) */}
+                  {payment && payment.status === 'pending' && (
+                    <div className="mt-3 p-2.5 bg-yellow-50 border border-yellow-200 rounded-lg">
+                      <p className="text-xs text-yellow-700 font-medium">⏳ ส่งสลิปแล้ว — อยู่ระหว่างรอตรวจสอบ</p>
+                      <p className="text-[10px] text-yellow-600 mt-0.5">ส่งเมื่อ: {payment.createdAt || '—'} | ยอด: ฿{Number(payment.amount || 0).toLocaleString()}</p>
+                    </div>
+                  )}
+
+                  {payment && (payment.status === 'paid' || payment.status === 'approved') && (
+                    <div className="mt-3 p-2.5 bg-green-50 border border-green-200 rounded-lg">
+                      <p className="text-xs text-green-700 font-medium">✅ การชำระเสร็จสิ้น — ตรวจสอบแล้ว</p>
+                      <p className="text-[10px] text-green-600 mt-0.5">ยอดที่ชำระ: ฿{Number(payment.amount || 0).toLocaleString()}</p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Action Button */}
+                {canSubmit && (
+                  <div className="px-4 pb-4">
+                    <button
+                      onClick={() => openSlipModal(bill)}
+                      className="w-full py-2.5 bg-blue-600 text-white rounded-lg font-medium text-sm hover:bg-blue-700 transition flex items-center justify-center gap-2"
+                    >
+                      📎 ส่งสลิปชำระเงิน
+                    </button>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Slip Upload Modal */}
+      {showSlipModal && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setShowSlipModal(false)}>
+          <div className="bg-white rounded-2xl w-full max-w-md max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+            {submitSuccess ? (
+              /* Success State */
+              <div className="p-8 text-center">
+                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <span className="text-3xl">✅</span>
+                </div>
+                <h3 className="text-lg font-bold text-gray-800 mb-2">ส่งสลิปเรียบร้อย!</h3>
+                <p className="text-sm text-gray-500 mb-6">สลิปของคุณอยู่ระหว่างรอตรวจสอบ<br/>ระบบจะแจ้งผลทางอีเมลหลังตรวจเสร็จ</p>
+                <button
+                  onClick={() => setShowSlipModal(false)}
+                  className="w-full py-2.5 bg-blue-600 text-white rounded-lg font-medium text-sm hover:bg-blue-700 transition"
+                >
+                  ปิด
+                </button>
+              </div>
+            ) : (
+              /* Upload Form */
+              <>
+                <div className="p-4 border-b border-gray-100 flex items-center justify-between">
+                  <h3 className="font-bold text-gray-800">📎 ส่งสลิปชำระเงิน</h3>
+                  <button onClick={() => setShowSlipModal(false)} className="text-gray-400 hover:text-gray-600 p-1">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+
+                <div className="p-4 space-y-4">
+                  {/* Bill Info */}
+                  <div className="bg-blue-50 rounded-lg p-3">
+                    <p className="text-xs text-blue-600 font-medium">บิลรอบ {selectedBill?.period || '—'}</p>
+                    <p className="text-lg font-bold text-blue-700 mt-1">฿{Number(selectedBill?.total_amount || 0).toLocaleString()}</p>
+                  </div>
+
+                  {/* Amount */}
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">จำนวนเงินที่ชำระ (บาท)</label>
+                    <input
+                      type="number"
+                      value={slipAmount}
+                      onChange={e => setSlipAmount(e.target.value)}
+                      className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="0.00"
+                    />
+                  </div>
+
+                  {/* Image Upload */}
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">แนบรูปสลิปการโอน</label>
+                    <div className="border-2 border-dashed border-gray-200 rounded-lg p-4 text-center hover:border-blue-300 transition cursor-pointer relative">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleFileSelect}
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                      />
+                      {slipImage ? (
+                        <div>
+                          <img src={slipImage} alt="slip preview" className="max-h-48 mx-auto rounded-lg mb-2" />
+                          <p className="text-xs text-green-600 font-medium">✅ แนบรูปแล้ว (กดเพื่อเปลี่ยน)</p>
+                        </div>
+                      ) : (
+                        <div>
+                          <span className="text-3xl block mb-2">📷</span>
+                          <p className="text-sm text-gray-500">กดเพื่อเลือกรูปสลิป</p>
+                          <p className="text-xs text-gray-400 mt-1">รองรับ JPG, PNG</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Submit */}
+                <div className="p-4 border-t border-gray-100 space-y-2">
+                  <button
+                    onClick={handleSubmitSlip}
+                    disabled={submitting || !slipAmount}
+                    className="w-full py-2.5 bg-blue-600 text-white rounded-lg font-medium text-sm hover:bg-blue-700 transition disabled:opacity-50 flex items-center justify-center gap-2"
+                  >
+                    {submitting ? (
+                      <>
+                        <div className="animate-spin w-4 h-4 border-2 border-white/30 border-t-white rounded-full"></div>
+                        กำลังส่ง...
+                      </>
+                    ) : (
+                      '📤 ยืนยันส่งสลิป'
+                    )}
+                  </button>
+                  <button
+                    onClick={() => setShowSlipModal(false)}
+                    className="w-full py-2 text-gray-500 text-sm hover:text-gray-700 transition"
+                  >
+                    ยกเลิก
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
