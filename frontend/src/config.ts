@@ -31,7 +31,8 @@ export const GAS_API_CONFIG = {
 export const SYSTEM_CONFIG = {
   // Application
   APP_NAME: 'HOME PPK',
-  APP_SUBTITLE: 'ระบบจัดการอพยพ',
+  APP_SUBTITLE: 'งานส่งเสริม กำกับ ดูแล และพัฒนาบ้านพักครู 2569',
+  APP_AUTHOR: 'ออกแบบและพัฒนาโดย ครูพงศธร โพธิแก้ว',
   VERSION: '1.0.0',
   
   // Default pricing (can be overridden from database)

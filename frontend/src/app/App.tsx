@@ -1,14 +1,8 @@
 /**
- * HOME PPK Main Application Component
+ * HOME PPK - งานส่งเสริม กำกับ ดูแล และพัฒนาบ้านพักครู 2569
+ * ออกแบบและพัฒนาโดย ครูพงศธร โพธิแก้ว
  * 
- * This is a simplified starter component that connects to the GAS backend.
- * The full App.tsx from the original Figma project is 2500+ lines due to
- * all the UI components and functionality. 
- * 
- * To use the complete application:
- * 1. Copy the full App.tsx from THE ORIGINAL PROJECT
- * 2. Update the imports to use the new API functions
- * 3. Configure the GAS API URL in frontend/src/config.ts
+ * Main Application Component
  */
 
 import React, { useState, useEffect } from 'react';
@@ -184,7 +178,7 @@ export default function App() {
               {t('common.appTitle')} v1.0.0
             </p>
             <p className="text-sm text-amber-700">
-              Powered by Node.js Backend & React Frontend
+              ออกแบบและพัฒนาโดย ครูพงศธร โพธิแก้ว
             </p>
           </div>
         </div>
@@ -193,8 +187,8 @@ export default function App() {
       {/* Footer */}
       <footer className="bg-white border-t border-gray-200 mt-8">
         <div className="container mx-auto px-4 py-6 text-center text-sm text-gray-600">
-          <p>{t('common.appName')} v1.0.0 | {formatDateThaiWithDayName(new Date())}</p>
-          <p className="text-xs mt-1">Powered by Node.js Backend & React Frontend</p>
+          <p>{t('common.appName')} v1.0.0 | {t('common.appTitle')} | {formatDateThaiWithDayName(new Date())}</p>
+          <p className="text-xs mt-1">ออกแบบและพัฒนาโดย ครูพงศธร โพธิแก้ว</p>
         </div>
       </footer>
     </div>

@@ -3,8 +3,8 @@
   "private": true,
   "version": "1.0.0",
   "type": "module",
-  "description": "HOME PPK - Housing Management System with Google Apps Script Backend",
-  "author": "Development Team",
+  "description": "HOME PPK - งานส่งเสริม กำกับ ดูแล และพัฒนาบ้านพักครู 2569",
+  "author": "ครูพงศธร โพธิแก้ว",
   "scripts": {
     "build": "vite build",
     "dev": "vite",

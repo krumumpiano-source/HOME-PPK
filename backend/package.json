@@ -1,7 +1,7 @@
 {
   "name": "home-ppk-backend",
   "version": "1.0.0",
-  "description": "HOME PPK - Backend API Server for Render",
+  "description": "HOME PPK - งานส่งเสริม กำกับ ดูแล และพัฒนาบ้านพักครู 2569",
   "main": "src/server.js",
   "type": "module",
   "scripts": {
@@ -14,7 +14,7 @@
     "rest-api",
     "home-management"
   ],
-  "author": "Development Team",
+  "author": "ครูพงศธร โพธิแก้ว",
   "license": "MIT",
   "dependencies": {
     "express": "^4.18.2",

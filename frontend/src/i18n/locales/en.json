@@ -1,8 +1,9 @@
 {
   "common": {
     "appName": "HOME PPK",
-    "appTitle": "HOME PPK Housing Management System",
-    "description": "Complete housing/dormitory management system",
+    "appTitle": "Teacher Housing Promotion, Supervision and Development 2569",
+    "appCredit": "Designed and Developed by Kru Pongsatorn Phothikaew",
+    "description": "Teacher Housing Management System",
     "loading": "Loading...",
     "error": "Error",
     "warning": "Warning",
