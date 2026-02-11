@@ -27,6 +27,7 @@ const mailTransporter = (function createTransporter() {
  * GET /api/payments
  * Get all payments
  */
+router.get('/', (req, res) => {
   let result = payments;
   if (req.query.residentId) {
     result = payments.filter(p => p.residentId === req.query.residentId);
