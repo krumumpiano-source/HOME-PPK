@@ -4,7 +4,26 @@ import { v4 as uuidv4 } from 'uuid';
 const router = Router();
 
 // Mock data storage (replace with database)
-let users = [];
+let users = [
+  {
+    id: '1',
+    email: 'admin@test.com',
+    password: 'admin123',
+    name: 'Admin',
+    role: 'admin',
+    status: 'active',
+    createdAt: new Date()
+  },
+  {
+    id: '2',
+    email: 'resident@test.com',
+    password: 'resident123',
+    name: 'Resident User',
+    role: 'resident',
+    status: 'active',
+    createdAt: new Date()
+  }
+];
 let sessions = {};
 
 /**

@@ -5,7 +5,7 @@
 
 // Configuration - Render deployment URL
 export const GAS_CONFIG = {
-  DEPLOYMENT_URL: process.env.REACT_APP_API_URL || 'http://localhost:3000',
+  DEPLOYMENT_URL: import.meta.env.VITE_API_URL || 'https://home-ppk.onrender.com',
   TIMEOUT: 30000,
 };
 
