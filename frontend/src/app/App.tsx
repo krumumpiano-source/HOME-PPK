@@ -881,14 +881,18 @@ function WaterRecordPage() {
         <div className="flex items-center gap-3">
           <div className="relative">
             <input
-              type="number"
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
               value={readings[r.id] || ''}
-              onChange={e => setReadings(prev => ({ ...prev, [r.id]: e.target.value }))}
+              onChange={e => {
+                const v = e.target.value.replace(/[^0-9]/g, '');
+                setReadings(prev => ({ ...prev, [r.id]: v }));
+              }}
               className={`w-24 px-3 py-2 text-center text-base font-mono border-2 rounded-lg focus:outline-none ${
                 isEmpty ? 'border-blue-400 bg-white focus:border-blue-600' : 'border-gray-200 focus:border-blue-500'
-              } [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
+              }`}
               placeholder="กรอก"
-              min={r.prevWater}
             />
           </div>
           {usage.valid ? (
@@ -1026,28 +1030,18 @@ function ElectricityRecordPage() {
         <div className="flex items-center gap-3">
           <div className="relative">
             <input
-              type="number"
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
               value={readings[r.id] || ''}
               onChange={e => {
-                const v = e.target.value;
-                if (v.includes('.')) {
-                  setReadings(prev => ({ ...prev, [r.id]: Math.ceil(parseFloat(v)).toString() }));
-                } else {
-                  setReadings(prev => ({ ...prev, [r.id]: v }));
-                }
-              }}
-              onBlur={e => {
-                const v = parseFloat(e.target.value);
-                if (!isNaN(v) && v !== Math.ceil(v)) {
-                  setReadings(prev => ({ ...prev, [r.id]: Math.ceil(v).toString() }));
-                }
+                const v = e.target.value.replace(/[^0-9]/g, '');
+                setReadings(prev => ({ ...prev, [r.id]: v }));
               }}
               className={`w-24 px-3 py-2 text-center text-base font-mono border-2 rounded-lg focus:outline-none ${
                 isEmpty ? 'border-yellow-400 bg-white focus:border-yellow-600' : 'border-gray-200 focus:border-yellow-500'
-              } [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
+              }`}
               placeholder="หน่วย"
-              min="0"
-              step="1"
             />
           </div>
           {cost.valid ? (
@@ -1124,10 +1118,14 @@ function ElectricityRecordPage() {
       <div className="bg-white rounded-xl border-2 border-blue-200 p-4">
         <label className="block text-sm font-bold text-gray-700 mb-2">💡 ยอดค่าไฟจากการไฟฟ้า (PEA)</label>
         <input
-          type="number"
+          type="text"
+          inputMode="decimal"
           value={peaTotal}
-          onChange={e => setPeaTotal(e.target.value)}
-          className="w-full max-w-xs px-4 py-3 text-lg font-mono border-2 border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+          onChange={e => {
+            const v = e.target.value.replace(/[^0-9.]/g, '');
+            setPeaTotal(v);
+          }}
+          className="w-full max-w-xs px-4 py-3 text-lg font-mono border-2 border-gray-200 rounded-lg focus:outline-none focus:border-blue-500"
           placeholder="0.00"
         />
         
