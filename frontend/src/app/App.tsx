@@ -3,7 +3,7 @@
  * ออกแบบและพัฒนาโดย ครูพงศธร โพธิแก้ว
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, createContext, useContext } from 'react';
 import {
   authenticateUser,
   getBills,
@@ -62,6 +62,24 @@ const MENU_ITEMS: MenuItem[] = [
 
 export { MENU_ITEMS };
 
+// ============ Shared Utility Data Context ============
+interface SharedUtilityData {
+  waterReadings: Record<string, string>;
+  setWaterReadings: React.Dispatch<React.SetStateAction<Record<string, string>>>;
+  waterPrevReadings: Record<string, number>;
+  setWaterPrevReadings: React.Dispatch<React.SetStateAction<Record<string, number>>>;
+  elecAmounts: Record<string, string>;
+  setElecAmounts: React.Dispatch<React.SetStateAction<Record<string, string>>>;
+  waterRate: number;
+  setWaterRate: React.Dispatch<React.SetStateAction<number>>;
+}
+const SharedUtilityCtx = createContext<SharedUtilityData | null>(null);
+function useSharedUtility() {
+  const ctx = useContext(SharedUtilityCtx);
+  if (!ctx) throw new Error('useSharedUtility must be inside SharedUtilityCtx.Provider');
+  return ctx;
+}
+
 // ============ Main App ============
 export default function App() {
   const [user, setUser] = useState<any>(null);
@@ -69,6 +87,19 @@ export default function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [loginLoading, setLoginLoading] = useState(false);
   const [loginError, setLoginError] = useState('');
+
+  // Shared utility data (water/electricity) across pages
+  const [sharedWaterReadings, setSharedWaterReadings] = useState<Record<string, string>>({});
+  const [sharedWaterPrevReadings, setSharedWaterPrevReadings] = useState<Record<string, number>>({});
+  const [sharedElecAmounts, setSharedElecAmounts] = useState<Record<string, string>>({});
+  const [sharedWaterRate, setSharedWaterRate] = useState(18);
+
+  const sharedUtility: SharedUtilityData = {
+    waterReadings: sharedWaterReadings, setWaterReadings: setSharedWaterReadings,
+    waterPrevReadings: sharedWaterPrevReadings, setWaterPrevReadings: setSharedWaterPrevReadings,
+    elecAmounts: sharedElecAmounts, setElecAmounts: setSharedElecAmounts,
+    waterRate: sharedWaterRate, setWaterRate: setSharedWaterRate,
+  };
 
   const navigateTo = (p: PageId) => {
     setPage(p);
@@ -188,7 +219,9 @@ export default function App() {
           </div>
         </header>
         <main className="flex-1 p-4 sm:p-6 overflow-auto">
-          <PageContent page={page} user={user} navigateTo={navigateTo} />
+          <SharedUtilityCtx.Provider value={sharedUtility}>
+            <PageContent page={page} user={user} navigateTo={navigateTo} />
+          </SharedUtilityCtx.Provider>
         </main>
         <footer className="bg-white border-t border-gray-100 px-4 py-2 text-center">
           <p className="text-[11px] text-gray-400">HOME PPK v1.0.0 | ออกแบบและพัฒนาโดย ครูพงศธร โพธิแก้ว</p>
@@ -628,7 +661,9 @@ function PaymentsPage({ user }: { user: any }) {
 // ============ Electricity Record Page (บันทึกค่าไฟ) ============
 function ElectricityRecordPage() {
   const { residents, loading: residentsLoading } = useResidents();
-  const [amounts, setAmounts] = useState<Record<string, string>>({});
+  const shared = useSharedUtility();
+  // Initialize from shared context so data persists across page navigation
+  const [amounts, setAmounts] = useState<Record<string, string>>(() => shared.elecAmounts);
   const [peaTotal, setPeaTotal] = useState('');
   const [lossHouse, setLossHouse] = useState('');
   const [lossFlat, setLossFlat] = useState('');
@@ -637,6 +672,11 @@ function ElectricityRecordPage() {
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear() + 543);
   const [exporting, setExporting] = useState(false);
+
+  // Sync electricity amounts to shared context for MonthlyBillPage
+  useEffect(() => {
+    if (Object.keys(amounts).length > 0) shared.setElecAmounts(amounts);
+  }, [amounts]);
 
   const thaiMonths = ['มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน', 
                       'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'];
@@ -883,33 +923,6 @@ function ElectricityRecordPage() {
       {/* ตารางแฟลต */}
       {renderTable('🏢 แฟลต', flats)}
 
-      {/* สรุปยอดรวม */}
-      <div className="bg-gradient-to-r from-yellow-600 to-orange-600 rounded-xl p-5 text-white shadow-lg">
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="text-lg font-bold">📊 สรุปยอดรวมทั้งหมด</h3>
-          <div className="text-xs opacity-90">{thaiMonths[selectedMonth - 1]} {selectedYear}</div>
-        </div>
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-          <div className="bg-white/10 rounded-lg p-3">
-            <div className="text-xs opacity-90 mb-1">บ้านพักครู</div>
-            <div className="text-xl font-bold">฿{houseTotalCollected.toLocaleString()}</div>
-          </div>
-          <div className="bg-white/10 rounded-lg p-3">
-            <div className="text-xs opacity-90 mb-1">แฟลต</div>
-            <div className="text-xl font-bold">฿{flatTotalCollected.toLocaleString()}</div>
-          </div>
-          <div className="bg-white/10 rounded-lg p-3">
-            <div className="text-xs opacity-90 mb-1">Loss (บ้าน + แฟลต)</div>
-            <div className="text-xl font-bold">฿{(getRoundedLossHouse + getRoundedLossFlat).toLocaleString()}</div>
-            <div className="text-[10px] opacity-75">บ้าน ฿{getRoundedLossHouse.toLocaleString()} | แฟลต ฿{getRoundedLossFlat.toLocaleString()}</div>
-          </div>
-          <div className="bg-white/20 rounded-lg p-3 border-2 border-white/30">
-            <div className="text-xs opacity-90 mb-1">เรียกเก็บรวมทั้งหมด</div>
-            <div className="text-2xl font-bold">฿{totalCollected.toLocaleString()}</div>
-          </div>
-        </div>
-      </div>
-
       {/* ส่วนต่างจากการปัดเศษ */}
       {peaTotalNum > 0 && (
         <div className={`rounded-xl border-2 p-5 shadow-sm ${roundingDifference >= 0 ? 'bg-green-50 border-green-300' : 'bg-red-50 border-red-300'}`}>
@@ -958,27 +971,31 @@ function ElectricityRecordPage() {
 // ============ Monthly Bill Page (แจ้งยอดประจำเดือน) ============
 function MonthlyBillPage() {
   const { residents, loading: residentsLoading } = useResidents();
-  const [waterReadings, setWaterReadings] = useState<Record<string, string>>({});
-  const [elecAmounts, setElecAmounts] = useState<Record<string, string>>({});
-  const [vacantIds, setVacantIds] = useState<Set<string>>(new Set());
+  const shared = useSharedUtility();
+  const [commonFees, setCommonFees] = useState<Record<string, string>>({});
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear() + 543);
-  const [waterRate, setWaterRate] = useState(18);
   const [sharing, setSharing] = useState(false);
-  const COMMON_FEE = 110;
+  const DEFAULT_COMMON_FEE = 110;
 
   const thaiMonths = ['มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน',
                       'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'];
   const years = Array.from({ length: 5 }, (_, i) => new Date().getFullYear() + 543 - i);
 
+  // Read shared data from Water/Electricity pages
+  const waterReadings = shared.waterReadings;
+  const waterPrevReadings = shared.waterPrevReadings;
+  const elecAmounts = shared.elecAmounts;
+  const waterRate = shared.waterRate;
+
+  // Initialize common fees with default 110 for all residents
   useEffect(() => {
-    (async () => {
-      try {
-        const res = await callGasApi('admin/settings');
-        if (res.success && res.data?.waterUnitPrice) setWaterRate(Number(res.data.waterUnitPrice));
-      } catch { /* use default */ }
-    })();
-  }, []);
+    if (residents.length > 0 && Object.keys(commonFees).length === 0) {
+      const initial: Record<string, string> = {};
+      residents.forEach(r => { initial[r.id] = String(DEFAULT_COMMON_FEE); });
+      setCommonFees(initial);
+    }
+  }, [residents]);
 
   if (residentsLoading) {
     return (
@@ -992,26 +1009,41 @@ function MonthlyBillPage() {
   const houses = residents.filter(r => r.type === 'house');
   const flats = residents.filter(r => r.type === 'flat');
 
+  const getWaterPrev = (id: string) => {
+    if (waterPrevReadings[id] !== undefined) return waterPrevReadings[id];
+    return residents.find(res => res.id === id)?.waterPrev ?? 0;
+  };
+
+  const getWaterCurrent = (id: string) => parseInt(waterReadings[id] || '') || 0;
+
   const getWaterUnits = (id: string) => {
-    const r = residents.find(res => res.id === id);
     const current = parseInt(waterReadings[id] || '');
-    const prev = r?.waterPrev ?? 0;
+    const prev = getWaterPrev(id);
     if (isNaN(current) || current < prev) return 0;
     return current - prev;
   };
 
   const getWaterCost = (id: string) => getWaterUnits(id) * waterRate;
   const getElecCost = (id: string) => Math.ceil(parseFloat(elecAmounts[id] || '') || 0);
-  const getCommonFee = (id: string) => vacantIds.has(id) ? 0 : COMMON_FEE;
+  const getCommonFee = (id: string) => {
+    const val = commonFees[id];
+    if (val === undefined || val === '') return 0;
+    return parseInt(val) || 0;
+  };
   const getTotal = (id: string) => getWaterCost(id) + getElecCost(id) + getCommonFee(id);
 
-  const toggleVacant = (id: string) => {
-    setVacantIds(prev => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id); else next.add(id);
-      return next;
-    });
+  const handleCommonFeeChange = (id: string, value: string) => {
+    const v = value.replace(/[^0-9]/g, '');
+    setCommonFees(prev => ({ ...prev, [id]: v }));
   };
+
+  const clearCommonFee = (id: string) => {
+    setCommonFees(prev => ({ ...prev, [id]: '0' }));
+  };
+
+  // Check if water/electricity data exists
+  const hasWaterData = Object.values(waterReadings).some(v => v !== '');
+  const hasElecData = Object.values(elecAmounts).some(v => v !== '');
 
   // ฟังก์ชันสร้างรูปแบบตารางเพื่อแชร์
   const generateShareImage = async (type: 'house' | 'flat') => {
@@ -1043,7 +1075,7 @@ function MonthlyBillPage() {
     ctx.textAlign = 'center';
     ctx.fillText(`📋 แจ้งยอดชำระประจำเดือน ${thaiMonths[selectedMonth - 1]} ${selectedYear}`, w / 2, 32);
     ctx.font = '16px "Sarabun", sans-serif';
-    ctx.fillText(`${type === 'house' ? '🏠' : '🏢'} ${title} | อัตราค่าน้ำ ฿${waterRate}/หน่วย | ค่าส่วนกลาง ฿${COMMON_FEE}`, w / 2, 60);
+    ctx.fillText(`${type === 'house' ? '🏠' : '🏢'} ${title} | อัตราค่าน้ำ ฿${waterRate}/หน่วย`, w / 2, 60);
 
     // Table columns
     const cols = [
@@ -1076,15 +1108,12 @@ function MonthlyBillPage() {
       ctx.fillStyle = idx % 2 === 0 ? '#ffffff' : '#f9fafb';
       ctx.fillRect(0, y, w, rowH);
 
-      // Grid line
       ctx.strokeStyle = '#e5e7eb';
       ctx.beginPath();
       ctx.moveTo(0, y + rowH);
       ctx.lineTo(w, y + rowH);
       ctx.stroke();
 
-      const res = residents.find(x => x.id === r.id)!;
-      const waterUnits = getWaterUnits(r.id);
       const waterCost = getWaterCost(r.id);
       const elecCost = getElecCost(r.id);
       const commonFee = getCommonFee(r.id);
@@ -1094,10 +1123,10 @@ function MonthlyBillPage() {
       grandCommon += commonFee;
       grandTotal += total;
 
-      const prev = res.waterPrev;
-      const current = parseInt(waterReadings[r.id] || '') || 0;
+      const prev = getWaterPrev(r.id);
+      const current = getWaterCurrent(r.id);
 
-      ctx.fillStyle = vacantIds.has(r.id) ? '#9ca3af' : '#374151';
+      ctx.fillStyle = commonFee === 0 ? '#9ca3af' : '#374151';
       ctx.font = '13px "Sarabun", sans-serif';
 
       const rowData = [
@@ -1107,7 +1136,7 @@ function MonthlyBillPage() {
         waterReadings[r.id] ? current.toLocaleString() : '—',
         waterCost > 0 ? `฿${waterCost.toLocaleString()}` : '—',
         elecCost > 0 ? `฿${elecCost.toLocaleString()}` : '—',
-        vacantIds.has(r.id) ? 'ว่าง' : `฿${commonFee}`,
+        commonFee > 0 ? `฿${commonFee}` : '—',
         total > 0 ? `฿${total.toLocaleString()}` : '—',
       ];
 
@@ -1120,7 +1149,7 @@ function MonthlyBillPage() {
         }
         ctx.fillText(rowData[ci], tx, y + 24);
         ctx.font = '13px "Sarabun", sans-serif';
-        ctx.fillStyle = vacantIds.has(r.id) ? '#9ca3af' : '#374151';
+        ctx.fillStyle = commonFee === 0 ? '#9ca3af' : '#374151';
       });
     });
 
@@ -1183,7 +1212,7 @@ function MonthlyBillPage() {
                   <th className="text-center px-2 py-3 font-bold text-gray-700 border-r border-gray-200 w-24">มิเตอร์น้ำ<br/><span className="text-[10px] font-normal">(ล่าสุด)</span></th>
                   <th className="text-right px-2 py-3 font-bold text-gray-700 border-r border-gray-200 w-20">ค่าน้ำ</th>
                   <th className="text-right px-2 py-3 font-bold text-gray-700 border-r border-gray-200 w-20">ค่าไฟ</th>
-                  <th className="text-right px-2 py-3 font-bold text-gray-700 border-r border-gray-200 w-20">ส่วนกลาง</th>
+                  <th className="text-center px-2 py-3 font-bold text-gray-700 border-r border-gray-200 w-24">ส่วนกลาง</th>
                   <th className="text-right px-3 py-3 font-bold text-gray-700 w-24">รวม</th>
                 </tr>
               </thead>
@@ -1194,39 +1223,40 @@ function MonthlyBillPage() {
                   const elecCost = getElecCost(r.id);
                   const commonFee = getCommonFee(r.id);
                   const total = getTotal(r.id);
-                  const isVacant = vacantIds.has(r.id);
                   return (
-                    <tr key={r.id} className={`border-b border-gray-100 ${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'} ${isVacant ? 'opacity-50' : ''} hover:bg-blue-50/30 transition`}>
+                    <tr key={r.id} className={`border-b border-gray-100 ${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'} hover:bg-blue-50/30 transition`}>
                       <td className="text-center px-2 py-2 font-mono text-gray-600 border-r border-gray-100">{r.id}</td>
                       <td className="px-2 py-2 border-r border-gray-100">
-                        <div className="flex items-center gap-1">
-                          <button onClick={() => toggleVacant(r.id)} className={`flex-shrink-0 w-5 h-5 rounded border text-[10px] flex items-center justify-center ${isVacant ? 'bg-gray-300 border-gray-400 text-white' : 'bg-green-100 border-green-400 text-green-700'}`} title={isVacant ? 'ว่าง' : 'มีผู้พัก'}>
-                            {isVacant ? '✕' : '✓'}
-                          </button>
-                          <span className="text-gray-800 truncate max-w-[160px]" title={r.name + (r.coResidents ? ',' + r.coResidents : '')}>
-                            {r.name}{r.coResidents ? <span className="text-[10px] text-gray-400">,{r.coResidents}</span> : ''}
-                          </span>
-                        </div>
+                        <span className="text-gray-800 truncate max-w-[170px] block" title={r.name + (r.coResidents ? ',' + r.coResidents : '')}>
+                          {r.name}{r.coResidents ? <span className="text-[10px] text-gray-400">,{r.coResidents}</span> : ''}
+                        </span>
                       </td>
-                      <td className="text-center px-2 py-2 font-mono text-gray-500 border-r border-gray-100 text-xs">{r.waterPrev.toLocaleString()}</td>
-                      <td className="text-center px-1 py-1 border-r border-gray-100">
-                        <input type="text" inputMode="numeric" value={waterReadings[r.id] || ''}
-                          onChange={e => setWaterReadings(prev => ({ ...prev, [r.id]: e.target.value.replace(/[^0-9]/g, '') }))}
-                          className="w-full px-1 py-1 text-center font-mono text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-400"
-                          placeholder="กรอก" />
+                      <td className="text-center px-2 py-2 font-mono text-gray-500 border-r border-gray-100 text-xs">{getWaterPrev(r.id).toLocaleString()}</td>
+                      <td className="text-center px-2 py-2 font-mono text-gray-700 border-r border-gray-100 text-xs">
+                        {waterReadings[r.id] ? getWaterCurrent(r.id).toLocaleString() : <span className="text-gray-300">—</span>}
                       </td>
                       <td className="text-right px-2 py-2 font-mono text-blue-600 border-r border-gray-100 text-xs">
                         {waterCost > 0 ? `฿${waterCost.toLocaleString()}` : '—'}
                         {waterUnits > 0 && <div className="text-[9px] text-gray-400">{waterUnits} หน่วย</div>}
                       </td>
-                      <td className="text-right px-1 py-1 border-r border-gray-100">
-                        <input type="text" inputMode="decimal" value={elecAmounts[r.id] || ''}
-                          onChange={e => setElecAmounts(prev => ({ ...prev, [r.id]: e.target.value.replace(/[^0-9.]/g, '') }))}
-                          className="w-full px-1 py-1 text-right font-mono text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-yellow-400"
-                          placeholder="0" />
+                      <td className="text-right px-2 py-2 font-mono text-yellow-700 border-r border-gray-100 text-xs">
+                        {elecCost > 0 ? `฿${elecCost.toLocaleString()}` : '—'}
                       </td>
-                      <td className="text-right px-2 py-2 font-mono text-gray-600 border-r border-gray-100 text-xs">
-                        {isVacant ? <span className="text-red-400">ว่าง</span> : `฿${COMMON_FEE}`}
+                      <td className="text-center px-1 py-1 border-r border-gray-100">
+                        <div className="flex items-center gap-0.5">
+                          <input
+                            type="text"
+                            inputMode="numeric"
+                            value={commonFees[r.id] ?? String(DEFAULT_COMMON_FEE)}
+                            onChange={e => handleCommonFeeChange(r.id, e.target.value)}
+                            className="w-14 px-1 py-1 text-center font-mono text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-purple-400"
+                          />
+                          <button
+                            onClick={() => clearCommonFee(r.id)}
+                            className="flex-shrink-0 w-5 h-5 rounded text-[10px] flex items-center justify-center text-red-400 hover:text-red-600 hover:bg-red-50 transition"
+                            title="ล้างค่าส่วนกลาง"
+                          >✕</button>
+                        </div>
                       </td>
                       <td className="text-right px-3 py-2 font-bold text-red-600 text-sm">
                         {total > 0 ? `฿${total.toLocaleString()}` : '—'}
@@ -1240,7 +1270,7 @@ function MonthlyBillPage() {
                   <td colSpan={4} className="text-right px-3 py-3 text-gray-800">รวม</td>
                   <td className="text-right px-2 py-3 text-blue-700">฿{totalWater.toLocaleString()}</td>
                   <td className="text-right px-2 py-3 text-yellow-700">฿{totalElec.toLocaleString()}</td>
-                  <td className="text-right px-2 py-3 text-gray-700">฿{totalCommon.toLocaleString()}</td>
+                  <td className="text-center px-2 py-3 text-gray-700">฿{totalCommon.toLocaleString()}</td>
                   <td className="text-right px-3 py-3 text-lg text-red-700">฿{totalAll.toLocaleString()}</td>
                 </tr>
               </tfoot>
@@ -1263,6 +1293,12 @@ function MonthlyBillPage() {
         <div className="flex-1">
           <h2 className="text-xl font-bold text-gray-800">📋 แจ้งยอดประจำเดือน</h2>
           <p className="text-xs text-gray-500 mt-1">สรุปยอดค่าน้ำ ค่าไฟ ค่าส่วนกลาง — เซฟรูปเพื่อแชร์ในไลน์กลุ่ม</p>
+          {(!hasWaterData || !hasElecData) && (
+            <div className="mt-2 px-3 py-2 bg-amber-50 border border-amber-200 rounded-lg text-xs text-amber-700">
+              ⚠️ {!hasWaterData && !hasElecData ? 'กรุณาบันทึกค่าน้ำและค่าไฟก่อน' : !hasWaterData ? 'กรุณาบันทึกค่าน้ำก่อน' : 'กรุณาบันทึกค่าไฟก่อน'}
+              — ข้อมูลจะดึงมาจากหน้าบันทึกค่าน้ำ/บันทึกค่าไฟโดยอัตโนมัติ
+            </div>
+          )}
           <div className="flex items-center gap-2 mt-3">
             <span className="text-xs text-gray-500">เลือกเดือน:</span>
             <select value={selectedMonth} onChange={e => setSelectedMonth(Number(e.target.value))}
@@ -1273,7 +1309,7 @@ function MonthlyBillPage() {
               className="px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-purple-400">
               {years.map(y => <option key={y} value={y}>{y}</option>)}
             </select>
-            <span className="text-[10px] text-gray-400 ml-2">ค่าน้ำ ฿{waterRate}/หน่วย | ส่วนกลาง ฿{COMMON_FEE}</span>
+            <span className="text-[10px] text-gray-400 ml-2">ค่าน้ำ ฿{waterRate}/หน่วย</span>
           </div>
         </div>
         <div className="text-right">
@@ -1295,7 +1331,7 @@ function MonthlyBillPage() {
           <h3 className="text-lg font-bold">📊 สรุปยอดรวมทั้งหมด</h3>
           <div className="text-xs opacity-90">{thaiMonths[selectedMonth - 1]} {selectedYear}</div>
         </div>
-        <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
           <div className="bg-white/10 rounded-lg p-3">
             <div className="text-xs opacity-90 mb-1">ค่าน้ำ</div>
             <div className="text-xl font-bold">฿{grandWater.toLocaleString()}</div>
@@ -1307,10 +1343,6 @@ function MonthlyBillPage() {
           <div className="bg-white/10 rounded-lg p-3">
             <div className="text-xs opacity-90 mb-1">ค่าส่วนกลาง</div>
             <div className="text-xl font-bold">฿{grandCommon.toLocaleString()}</div>
-          </div>
-          <div className="bg-white/10 rounded-lg p-3">
-            <div className="text-xs opacity-90 mb-1">จำนวนผู้พัก</div>
-            <div className="text-xl font-bold">{residents.length - vacantIds.size} / {residents.length}</div>
           </div>
           <div className="bg-white/20 rounded-lg p-3 border-2 border-white/30">
             <div className="text-xs opacity-90 mb-1">ยอดรวมทั้งหมด</div>
@@ -1617,15 +1649,17 @@ function PaymentHistoryPage() {
 // ============ Water Record Page (บันทึกค่าน้ำ) ============
 function WaterRecordPage() {
   const { residents, loading: residentsLoading } = useResidents();
-  const [readings, setReadings] = useState<Record<string, string>>({});
-  const [waterRate, setWaterRate] = useState(18);
+  const shared = useSharedUtility();
+  // Initialize from shared context so data persists across page navigation
+  const [readings, setReadings] = useState<Record<string, string>>(() => shared.waterReadings);
+  const [waterRate, setWaterRate] = useState(() => shared.waterRate);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear() + 543);
   const [exporting, setExporting] = useState(false);
   const [editMode, setEditMode] = useState(false);
-  const [prevReadings, setPrevReadings] = useState<Record<string, number>>({});
+  const [prevReadings, setPrevReadings] = useState<Record<string, number>>(() => shared.waterPrevReadings);
 
   const thaiMonths = ['มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน', 
                       'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'];
@@ -1641,10 +1675,22 @@ function WaterRecordPage() {
   }, []);
 
   useEffect(() => {
-    const initial: Record<string, number> = {};
-    residents.forEach(r => { initial[r.id] = r.waterPrev; });
-    setPrevReadings(initial);
+    // Only initialize prevReadings from residents if shared context is empty
+    if (Object.keys(prevReadings).length === 0) {
+      const initial: Record<string, number> = {};
+      residents.forEach(r => { initial[r.id] = r.waterPrev; });
+      setPrevReadings(initial);
+    }
   }, [residents]);
+
+  // Sync to shared context for MonthlyBillPage (only when data exists)
+  useEffect(() => {
+    if (Object.keys(readings).length > 0) shared.setWaterReadings(readings);
+  }, [readings]);
+  useEffect(() => {
+    if (Object.keys(prevReadings).length > 0) shared.setWaterPrevReadings(prevReadings);
+  }, [prevReadings]);
+  useEffect(() => { shared.setWaterRate(waterRate); }, [waterRate]);
 
   if (residentsLoading) {
     return (
