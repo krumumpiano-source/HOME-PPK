@@ -121,16 +121,6 @@ input, textarea, select {
     text-decoration: underline;
   }
 }
-  font-family: inherit;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-input, select, textarea {
-  font-family: inherit;
-  font-size: inherit;
-}
-
 /* Scrollbar styling */
 ::-webkit-scrollbar {
   width: 8px;
