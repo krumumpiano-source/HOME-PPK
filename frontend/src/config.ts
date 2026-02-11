@@ -7,13 +7,13 @@
 
 export const GAS_API_CONFIG = {
   // Render deployment URL (production)
-  PRODUCTION_URL: 'https://home-ppk-backend.onrender.com',
+  PRODUCTION_URL: 'https://home-ppk.onrender.com',
   
   // Local development URL
   DEVELOPMENT_URL: 'http://localhost:3000',
   
   // Use development URL if backend is running locally, otherwise use production
-  BASE_URL: process.env.REACT_APP_API_URL || 'http://localhost:3000',
+  BASE_URL: import.meta.env.VITE_API_URL || 'https://home-ppk.onrender.com',
   
   // API settings
   TIMEOUT: 30000,
