@@ -36,8 +36,7 @@ const mailTransporter = (function createTransporter() {
     data: result,
     total: result.length
   });
-}
-);
+});
 
 /**
  * POST /api/payments
