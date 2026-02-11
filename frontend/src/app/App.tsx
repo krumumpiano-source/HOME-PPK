@@ -854,6 +854,13 @@ function WaterRecordPage() {
   const [waterRate, setWaterRate] = useState(18);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear() + 543);
+  const [exporting, setExporting] = useState(false);
+
+  const thaiMonths = ['มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน', 
+                      'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'];
+  const years = Array.from({ length: 5 }, (_, i) => new Date().getFullYear() + 543 - i);
 
   useEffect(() => {
     (async () => {
@@ -882,6 +889,14 @@ function WaterRecordPage() {
     setTimeout(() => setSaved(false), 3000);
   };
 
+  const handleExport = async () => {
+    setExporting(true);
+    // TODO: API call to export to Google Sheets
+    await new Promise(r => setTimeout(r, 1000));
+    alert(`กำลังส่งออกข้อมูลค่าน้ำ ${thaiMonths[selectedMonth - 1]} ${selectedYear} ไปยัง Google Sheets`);
+    setExporting(false);
+  };
+
   const renderTable = (title: string, residents: typeof MOCK_RESIDENTS) => {
     const totalUnits = residents.reduce((s, r) => s + getUsage(r.id, r.prevWater).units, 0);
     const totalCost = residents.reduce((s, r) => s + getUsage(r.id, r.prevWater).cost, 0);
@@ -889,17 +904,17 @@ function WaterRecordPage() {
     return (
       <div className="mb-6">
         <h3 className="text-base font-bold text-gray-800 mb-3">{title}</h3>
-        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm">
           <div className="overflow-x-auto">
             <table className="w-full text-sm border-collapse">
               <thead>
                 <tr className="bg-gradient-to-r from-blue-50 to-cyan-50 border-b-2 border-blue-200">
-                  <th className="text-center px-3 py-3 font-bold text-gray-700 border-r border-gray-200 w-16">เลขที่</th>
+                  <th className="text-center px-2 py-3 font-bold text-gray-700 border-r border-gray-200 w-16">เลขที่</th>
                   <th className="text-left px-3 py-3 font-bold text-gray-700 border-r border-gray-200">ชื่อผู้พักอาศัย</th>
-                  <th className="text-center px-3 py-3 font-bold text-gray-700 border-r border-gray-200 w-32">เลขมิเตอร์ก่อนหน้า</th>
-                  <th className="text-center px-3 py-3 font-bold text-gray-700 border-r border-gray-200 w-32">เลขมิเตอร์ล่าสุด</th>
-                  <th className="text-center px-3 py-3 font-bold text-gray-700 border-r border-gray-200 w-24">หน่วย</th>
-                  <th className="text-right px-3 py-3 font-bold text-gray-700 w-28">รวมค่าน้ำ</th>
+                  <th className="text-center px-2 py-3 font-bold text-gray-700 border-r border-gray-200 w-28">เลขมิเตอร์ก่อนหน้า</th>
+                  <th className="text-center px-2 py-3 font-bold text-gray-700 border-r border-gray-200 w-28">เลขมิเตอร์ล่าสุด</th>
+                  <th className="text-center px-2 py-3 font-bold text-gray-700 border-r border-gray-200 w-20">หน่วย</th>
+                  <th className="text-right px-4 py-3 font-bold text-gray-700 w-32">รวมค่าน้ำ</th>
                 </tr>
               </thead>
               <tbody>
@@ -907,10 +922,10 @@ function WaterRecordPage() {
                   const usage = getUsage(r.id, r.prevWater);
                   return (
                     <tr key={r.id} className={`border-b border-gray-100 ${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'} hover:bg-blue-50/30 transition`}>
-                      <td className="text-center px-3 py-2.5 font-mono text-gray-600 border-r border-gray-100">{r.id}</td>
+                      <td className="text-center px-2 py-2.5 font-mono text-gray-600 border-r border-gray-100">{r.id}</td>
                       <td className="px-3 py-2.5 text-gray-800 border-r border-gray-100">{r.name}</td>
-                      <td className="text-center px-3 py-2.5 font-mono text-gray-600 border-r border-gray-100">{r.prevWater}</td>
-                      <td className="text-center px-2 py-1.5 border-r border-gray-100">
+                      <td className="text-center px-2 py-2.5 font-mono text-gray-600 border-r border-gray-100">{r.prevWater}</td>
+                      <td className="text-center px-1 py-1.5 border-r border-gray-100">
                         <input
                           type="text"
                           inputMode="numeric"
@@ -924,10 +939,10 @@ function WaterRecordPage() {
                           placeholder="กรอก"
                         />
                       </td>
-                      <td className="text-center px-3 py-2.5 font-mono font-medium text-gray-700 border-r border-gray-100">
+                      <td className="text-center px-2 py-2.5 font-mono font-medium text-gray-700 border-r border-gray-100">
                         {usage.valid ? usage.units : '—'}
                       </td>
-                      <td className="text-right px-3 py-2.5 font-bold text-blue-600">
+                      <td className="text-right px-4 py-2.5 font-bold text-blue-600">
                         {usage.valid ? `฿${usage.cost.toLocaleString()}` : '—'}
                       </td>
                     </tr>
@@ -937,8 +952,8 @@ function WaterRecordPage() {
               <tfoot>
                 <tr className="bg-gradient-to-r from-blue-100 to-cyan-100 border-t-2 border-blue-300 font-bold">
                   <td colSpan={4} className="text-right px-3 py-3 text-gray-800">รวม</td>
-                  <td className="text-center px-3 py-3 font-mono text-lg text-gray-800 border-r border-blue-200">{totalUnits}</td>
-                  <td className="text-right px-3 py-3 text-lg text-blue-700">฿{totalCost.toLocaleString()}</td>
+                  <td className="text-center px-2 py-3 font-mono text-lg text-gray-800 border-r border-blue-200">{totalUnits}</td>
+                  <td className="text-right px-4 py-3 text-lg text-blue-700">฿{totalCost.toLocaleString()}</td>
                 </tr>
               </tfoot>
             </table>
@@ -950,32 +965,90 @@ function WaterRecordPage() {
 
   const allUnits = [...houses, ...flats].reduce((s, r) => s + getUsage(r.id, r.prevWater).units, 0);
   const allCost = [...houses, ...flats].reduce((s, r) => s + getUsage(r.id, r.prevWater).cost, 0);
+  const houseUnits = houses.reduce((s, r) => s + getUsage(r.id, r.prevWater).units, 0);
+  const houseCost = houses.reduce((s, r) => s + getUsage(r.id, r.prevWater).cost, 0);
+  const flatUnits = flats.reduce((s, r) => s + getUsage(r.id, r.prevWater).units, 0);
+  const flatCost = flats.reduce((s, r) => s + getUsage(r.id, r.prevWater).cost, 0);
 
   return (
     <div className="space-y-5">
-      <div className="flex items-center justify-between">
-        <div>
+      <div className="flex items-start justify-between gap-4">
+        <div className="flex-1">
           <h2 className="text-xl font-bold text-gray-800">💧 บันทึกค่าน้ำ</h2>
           <p className="text-xs text-gray-500 mt-1">อัตราค่าน้ำ: <span className="font-bold text-blue-600">฿{waterRate}/หน่วย</span></p>
+          
+          {/* Month/Year Selector */}
+          <div className="flex items-center gap-2 mt-3">
+            <span className="text-xs text-gray-500">เลือกดูข้อมูล:</span>
+            <select 
+              value={selectedMonth} 
+              onChange={e => setSelectedMonth(Number(e.target.value))}
+              className="px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
+            >
+              {thaiMonths.map((m, i) => <option key={i} value={i + 1}>{m}</option>)}
+            </select>
+            <select 
+              value={selectedYear} 
+              onChange={e => setSelectedYear(Number(e.target.value))}
+              className="px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
+            >
+              {years.map(y => <option key={y} value={y}>{y}</option>)}
+            </select>
+          </div>
         </div>
+
         <div className="flex items-center gap-3">
           <div className="text-right">
             <div className="text-xs text-gray-500">ยอดรวมทั้งหมด</div>
             <div className="text-2xl font-bold text-blue-600">฿{allCost.toLocaleString()}</div>
             <div className="text-[10px] text-gray-400">{allUnits} หน่วย</div>
           </div>
-          <button
-            onClick={handleSave}
-            disabled={saving}
-            className="px-5 py-2.5 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition shadow-sm disabled:opacity-50"
-          >
-            {saving ? '⏳ กำลังบันทึก...' : saved ? '✅ บันทึกแล้ว' : '💾 บันทึก'}
-          </button>
+          <div className="flex flex-col gap-2">
+            <button
+              onClick={handleSave}
+              disabled={saving}
+              className="px-5 py-2 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition shadow-sm disabled:opacity-50"
+            >
+              {saving ? '⏳ กำลังบันทึก...' : saved ? '✅ บันทึกแล้ว' : '💾 บันทึก'}
+            </button>
+            <button
+              onClick={handleExport}
+              disabled={exporting}
+              className="px-5 py-2 text-sm font-medium bg-green-600 text-white rounded-lg hover:bg-green-700 transition shadow-sm disabled:opacity-50"
+            >
+              {exporting ? '⏳ กำลังส่งออก...' : '📊 รายงาน'}
+            </button>
+          </div>
         </div>
       </div>
 
       {renderTable('🏠 บ้านพักครู', houses)}
       {renderTable('🏢 แฟลต', flats)}
+
+      {/* Grand Total Summary */}
+      <div className="bg-gradient-to-r from-blue-600 to-cyan-600 rounded-xl p-5 text-white shadow-lg">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-lg font-bold">📊 สรุปยอดรวมทั้งหมด</h3>
+          <div className="text-xs opacity-90">{thaiMonths[selectedMonth - 1]} {selectedYear}</div>
+        </div>
+        <div className="grid grid-cols-3 gap-4">
+          <div className="bg-white/10 rounded-lg p-3">
+            <div className="text-xs opacity-90 mb-1">บ้านพักครู</div>
+            <div className="text-xl font-bold">฿{houseCost.toLocaleString()}</div>
+            <div className="text-[10px] opacity-75">{houseUnits} หน่วย</div>
+          </div>
+          <div className="bg-white/10 rounded-lg p-3">
+            <div className="text-xs opacity-90 mb-1">แฟลต</div>
+            <div className="text-xl font-bold">฿{flatCost.toLocaleString()}</div>
+            <div className="text-[10px] opacity-75">{flatUnits} หน่วย</div>
+          </div>
+          <div className="bg-white/20 rounded-lg p-3 border-2 border-white/30">
+            <div className="text-xs opacity-90 mb-1">รวมทั้งหมด</div>
+            <div className="text-2xl font-bold">฿{allCost.toLocaleString()}</div>
+            <div className="text-[10px] opacity-75">{allUnits} หน่วย</div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
@@ -987,6 +1060,13 @@ function ElectricityRecordPage() {
   const [peaTotal, setPeaTotal] = useState('');
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear() + 543);
+  const [exporting, setExporting] = useState(false);
+
+  const thaiMonths = ['มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน', 
+                      'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'];
+  const years = Array.from({ length: 5 }, (_, i) => new Date().getFullYear() + 543 - i);
 
   useEffect(() => {
     (async () => {
@@ -1021,6 +1101,13 @@ function ElectricityRecordPage() {
     setTimeout(() => setSaved(false), 3000);
   };
 
+  const handleExport = async () => {
+    setExporting(true);
+    await new Promise(r => setTimeout(r, 1000));
+    alert(`กำลังส่งออกข้อมูลค่าไฟ ${thaiMonths[selectedMonth - 1]} ${selectedYear} ไปยัง Google Sheets`);
+    setExporting(false);
+  };
+
   const renderTable = (title: string, residents: typeof MOCK_RESIDENTS) => {
     const totalUnits = residents.reduce((s, r) => s + getCost(r.id).units, 0);
     const totalCost = residents.reduce((s, r) => s + getCost(r.id).rounded, 0);
@@ -1028,16 +1115,16 @@ function ElectricityRecordPage() {
     return (
       <div className="mb-6">
         <h3 className="text-base font-bold text-gray-800 mb-3">{title}</h3>
-        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm">
           <div className="overflow-x-auto">
             <table className="w-full text-sm border-collapse">
               <thead>
                 <tr className="bg-gradient-to-r from-yellow-50 to-orange-50 border-b-2 border-yellow-200">
-                  <th className="text-center px-3 py-3 font-bold text-gray-700 border-r border-gray-200 w-16">เลขที่</th>
+                  <th className="text-center px-2 py-3 font-bold text-gray-700 border-r border-gray-200 w-16">เลขที่</th>
                   <th className="text-left px-3 py-3 font-bold text-gray-700 border-r border-gray-200">ชื่อผู้พักอาศัย</th>
-                  <th className="text-center px-3 py-3 font-bold text-gray-700 border-r border-gray-200 w-32">มิเตอร์ล่าสุด</th>
-                  <th className="text-center px-3 py-3 font-bold text-gray-700 border-r border-gray-200 w-24">หน่วย</th>
-                  <th className="text-right px-3 py-3 font-bold text-gray-700 w-28">ค่าไฟ (฿)</th>
+                  <th className="text-center px-2 py-3 font-bold text-gray-700 border-r border-gray-200 w-28">มิเตอร์ล่าสุด</th>
+                  <th className="text-center px-2 py-3 font-bold text-gray-700 border-r border-gray-200 w-20">หน่วย</th>
+                  <th className="text-right px-4 py-3 font-bold text-gray-700 w-32">ค่าไฟ (฿)</th>
                 </tr>
               </thead>
               <tbody>
@@ -1045,9 +1132,9 @@ function ElectricityRecordPage() {
                   const cost = getCost(r.id);
                   return (
                     <tr key={r.id} className={`border-b border-gray-100 ${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'} hover:bg-yellow-50/30 transition`}>
-                      <td className="text-center px-3 py-2.5 font-mono text-gray-600 border-r border-gray-100">{r.id}</td>
+                      <td className="text-center px-2 py-2.5 font-mono text-gray-600 border-r border-gray-100">{r.id}</td>
                       <td className="px-3 py-2.5 text-gray-800 border-r border-gray-100">{r.name}</td>
-                      <td className="text-center px-2 py-1.5 border-r border-gray-100">
+                      <td className="text-center px-1 py-1.5 border-r border-gray-100">
                         <input
                           type="text"
                           inputMode="numeric"
@@ -1061,10 +1148,10 @@ function ElectricityRecordPage() {
                           placeholder="หน่วย"
                         />
                       </td>
-                      <td className="text-center px-3 py-2.5 font-mono font-medium text-gray-700 border-r border-gray-100">
+                      <td className="text-center px-2 py-2.5 font-mono font-medium text-gray-700 border-r border-gray-100">
                         {cost.valid ? cost.units : '—'}
                       </td>
-                      <td className="text-right px-3 py-2.5 font-bold text-yellow-600">
+                      <td className="text-right px-4 py-2.5 font-bold text-yellow-600">
                         {cost.valid ? `฿${cost.rounded.toLocaleString()}` : '—'}
                       </td>
                     </tr>
@@ -1074,8 +1161,8 @@ function ElectricityRecordPage() {
               <tfoot>
                 <tr className="bg-gradient-to-r from-yellow-100 to-orange-100 border-t-2 border-yellow-300 font-bold">
                   <td colSpan={3} className="text-right px-3 py-3 text-gray-800">รวม</td>
-                  <td className="text-center px-3 py-3 font-mono text-lg text-gray-800 border-r border-yellow-200">{totalUnits}</td>
-                  <td className="text-right px-3 py-3 text-lg text-yellow-700">฿{totalCost.toLocaleString()}</td>
+                  <td className="text-center px-2 py-3 font-mono text-lg text-gray-800 border-r border-yellow-200">{totalUnits}</td>
+                  <td className="text-right px-4 py-3 text-lg text-yellow-700">฿{totalCost.toLocaleString()}</td>
                 </tr>
               </tfoot>
             </table>
@@ -1086,35 +1173,93 @@ function ElectricityRecordPage() {
   };
 
   const allUnits = [...houses, ...flats].reduce((s, r) => s + getCost(r.id).units, 0);
+  const houseUnits = houses.reduce((s, r) => s + getCost(r.id).units, 0);
+  const houseCost = houses.reduce((s, r) => s + getCost(r.id).rounded, 0);
+  const flatUnits = flats.reduce((s, r) => s + getCost(r.id).units, 0);
+  const flatCost = flats.reduce((s, r) => s + getCost(r.id).rounded, 0);
 
   return (
     <div className="space-y-5">
-      <div className="flex items-center justify-between">
-        <div>
+      <div className="flex items-start justify-between gap-4">
+        <div className="flex-1">
           <h2 className="text-xl font-bold text-gray-800">⚡ บันทึกค่าไฟ</h2>
           <p className="text-xs text-gray-500 mt-1">อัตราค่าไฟ: <span className="font-bold text-yellow-600">฿{elecRate}/หน่วย</span></p>
+          
+          {/* Month/Year Selector */}
+          <div className="flex items-center gap-2 mt-3">
+            <span className="text-xs text-gray-500">เลือกดูข้อมูล:</span>
+            <select 
+              value={selectedMonth} 
+              onChange={e => setSelectedMonth(Number(e.target.value))}
+              className="px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-yellow-400"
+            >
+              {thaiMonths.map((m, i) => <option key={i} value={i + 1}>{m}</option>)}
+            </select>
+            <select 
+              value={selectedYear} 
+              onChange={e => setSelectedYear(Number(e.target.value))}
+              className="px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-yellow-400"
+            >
+              {years.map(y => <option key={y} value={y}>{y}</option>)}
+            </select>
+          </div>
         </div>
+
         <div className="flex items-center gap-3">
           <div className="text-right">
             <div className="text-xs text-gray-500">ยอดเรียกเก็บ</div>
             <div className="text-2xl font-bold text-yellow-600">฿{totalCollected.toLocaleString()}</div>
             <div className="text-[10px] text-gray-400">{allUnits} หน่วย</div>
           </div>
-          <button
-            onClick={handleSave}
-            disabled={saving}
-            className="px-5 py-2.5 text-sm font-medium bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition shadow-sm disabled:opacity-50"
-          >
-            {saving ? '⏳ กำลังบันทึก...' : saved ? '✅ บันทึกแล้ว' : '💾 บันทึก'}
-          </button>
+          <div className="flex flex-col gap-2">
+            <button
+              onClick={handleSave}
+              disabled={saving}
+              className="px-5 py-2 text-sm font-medium bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition shadow-sm disabled:opacity-50"
+            >
+              {saving ? '⏳ กำลังบันทึก...' : saved ? '✅ บันทึกแล้ว' : '💾 บันทึก'}
+            </button>
+            <button
+              onClick={handleExport}
+              disabled={exporting}
+              className="px-5 py-2 text-sm font-medium bg-green-600 text-white rounded-lg hover:bg-green-700 transition shadow-sm disabled:opacity-50"
+            >
+              {exporting ? '⏳ กำลังส่งออก...' : '📊 รายงาน'}
+            </button>
+          </div>
         </div>
       </div>
 
       {renderTable('🏠 บ้านพักครู', houses)}
       {renderTable('🏢 แฟลต', flats)}
 
+      {/* Grand Total Summary */}
+      <div className="bg-gradient-to-r from-yellow-600 to-orange-600 rounded-xl p-5 text-white shadow-lg">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-lg font-bold">📊 สรุปยอดรวมทั้งหมด</h3>
+          <div className="text-xs opacity-90">{thaiMonths[selectedMonth - 1]} {selectedYear}</div>
+        </div>
+        <div className="grid grid-cols-3 gap-4">
+          <div className="bg-white/10 rounded-lg p-3">
+            <div className="text-xs opacity-90 mb-1">บ้านพักครู</div>
+            <div className="text-xl font-bold">฿{houseCost.toLocaleString()}</div>
+            <div className="text-[10px] opacity-75">{houseUnits} หน่วย</div>
+          </div>
+          <div className="bg-white/10 rounded-lg p-3">
+            <div className="text-xs opacity-90 mb-1">แฟลต</div>
+            <div className="text-xl font-bold">฿{flatCost.toLocaleString()}</div>
+            <div className="text-[10px] opacity-75">{flatUnits} หน่วย</div>
+          </div>
+          <div className="bg-white/20 rounded-lg p-3 border-2 border-white/30">
+            <div className="text-xs opacity-90 mb-1">รวมทั้งหมด</div>
+            <div className="text-2xl font-bold">฿{totalCollected.toLocaleString()}</div>
+            <div className="text-[10px] opacity-75">{allUnits} หน่วย</div>
+          </div>
+        </div>
+      </div>
+
       {/* PEA Total & Difference */}
-      <div className="bg-white rounded-xl border-2 border-blue-200 p-5">
+      <div className="bg-white rounded-xl border-2 border-blue-200 p-5 shadow-sm">
         <h3 className="text-base font-bold text-gray-800 mb-4">💡 ยอดค่าไฟจากการไฟฟ้า (PEA)</h3>
         <div className="flex items-end gap-4">
           <div className="flex-1 max-w-xs">
