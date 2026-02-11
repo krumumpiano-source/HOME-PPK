@@ -813,40 +813,41 @@ function PaymentHistoryPage({ user }: { user: any }) {
 }
 
 // ============ Water Record Page (บันทึกค่าน้ำ) ============
+// ข้อมูลเลขมิเตอร์น้ำ เดือนกุมภาพันธ์ 2569 (สามารถแก้ไขได้ในโปรแกรม)
 const MOCK_RESIDENTS = [
-  { id: '1', name: 'บ้านพักนักการ', type: 'house', prevWater: 0, prevElec: 0 },
-  { id: '2', name: 'นางสาวพิมพ์ใจ สมศรี', type: 'house', prevWater: 2146, prevElec: 2156 },
-  { id: '3', name: 'นางบุษบา อริยะคำ', type: 'house', prevWater: 1974, prevElec: 1982 },
-  { id: '4', name: 'นายรณชัย วรรณรัตน์', type: 'house', prevWater: 1105, prevElec: 1116 },
-  { id: '5', name: 'นางสาวปิโยรส ใจเอื้อ,นางสาวชุลีมาศ คำบุญเรือง', type: 'house', prevWater: 1547, prevElec: 1549 },
-  { id: '6', name: 'บ้านพักครูจีน', type: 'house', prevWater: 893, prevElec: 695 },
-  { id: '7', name: 'นางสาวรัตนา สบายจิตร', type: 'house', prevWater: 1818, prevElec: 1825 },
-  { id: '8', name: 'นายเจษฏาวัชส์ เสียงเย็น,นายอดิสรณ์ ปินตามูล', type: 'house', prevWater: 1673, prevElec: 1682 },
-  { id: '9', name: 'นายพงศธร โพธิแก้ว', type: 'house', prevWater: 1796, prevElec: 1808 },
-  { id: '10', name: 'นางจีรพา กันทา', type: 'house', prevWater: 2395, prevElec: 2409 },
-  { id: '11', name: 'น.ส.ลัดดาวัลย์ บุญคุ้ม', type: 'house', prevWater: 1692, prevElec: 1700 },
-  { id: '12', name: 'น.ส.ญาณกร ศรีชาติ', type: 'house', prevWater: 1399, prevElec: 1405 },
-  { id: '13', name: 'นางดารากร จางคพิเชียร', type: 'house', prevWater: 1862, prevElec: 1881 },
-  { id: '14', name: 'นางสาวเจนจิรา จันทร์หล้า', type: 'house', prevWater: 2239, prevElec: 2249 },
-  { id: '15', name: 'น.ส.กานท์ชญา อ่อนนวล', type: 'house', prevWater: 3179, prevElec: 3192 },
-  { id: '16', name: 'นางดวงจันทร์ หลายแห่ง', type: 'house', prevWater: 1155, prevElec: 1164 },
-  { id: '17', name: 'นายเฉลิมพล ปามา,นายกัญจน์ณัฏฐ์ โลกคำลือ', type: 'house', prevWater: 1818, prevElec: 1826 },
-  { id: 'F1', name: 'นายณัฐพงศ์ คำเป็ง', type: 'flat', prevWater: 752, prevElec: 753 },
-  { id: 'F2', name: 'น.ส.กันยา กันทะ', type: 'flat', prevWater: 0, prevElec: 0 },
-  { id: 'F3', name: 'น.ส.ขวัญดาว วงษ์พันธ์,น.ส.อรอนงค์ ยามเลย', type: 'flat', prevWater: 0, prevElec: 0 },
-  { id: 'F4', name: 'แฟลตครูญี่ปุ่น', type: 'flat', prevWater: 0, prevElec: 0 },
-  { id: 'F5', name: 'นายสุมงคล จ่อยพิรัตน์', type: 'flat', prevWater: 0, prevElec: 0 },
-  { id: 'F6', name: 'นายทรงศักดิ์ แก้ววิลัย', type: 'flat', prevWater: 0, prevElec: 0 },
-  { id: 'F7', name: 'นายพงศกร หงษ์ระนัย', type: 'flat', prevWater: 0, prevElec: 0 },
-  { id: 'F8', name: 'นายพงศกร วังศิลา,นายอภินันท์ ผ่องกมล', type: 'flat', prevWater: 0, prevElec: 0 },
-  { id: 'F9', name: 'น.ส.สุกันญา ตามสมัย,น.ส.กัญนิกา สีเสน', type: 'flat', prevWater: 0, prevElec: 0 },
-  { id: 'F10', name: 'น.ส.ดารากรณ์ นาคสุกเอี่ยม', type: 'flat', prevWater: 0, prevElec: 0 },
-  { id: 'F11', name: 'นางสาวกนกพร ภู่ปรางทอง', type: 'flat', prevWater: 0, prevElec: 0 },
-  { id: 'F12', name: 'นายราชนุชา อินจันทร์', type: 'flat', prevWater: 0, prevElec: 0 },
-  { id: 'F13', name: 'น.ส.จริญญา ศิลธรรม,น.ส.ปาริฉัตร์ คันธิสา', type: 'flat', prevWater: 0, prevElec: 0 },
-  { id: 'F14', name: 'นายจิรพันธ์ จันจินะ,นายอุดม พลทองมาก', type: 'flat', prevWater: 0, prevElec: 0 },
-  { id: 'F15', name: 'นางสาวรุจิรา กาจินา', type: 'flat', prevWater: 0, prevElec: 0 },
-  { id: 'F16', name: 'นายจรูญพงษ์ ชลสินธุ์', type: 'flat', prevWater: 0, prevElec: 0 },
+  { id: '1', name: 'บ้านพักนักการ', type: 'house', prevWater: 162755, prevElec: 0 },
+  { id: '2', name: 'นางสาวพิมพ์ใจ สมศรี', type: 'house', prevWater: 2175, prevElec: 2156 },
+  { id: '3', name: 'นางบุษบา อริยะคำ', type: 'house', prevWater: 1999, prevElec: 1982 },
+  { id: '4', name: 'นายรณชัย วรรณรัตน์', type: 'house', prevWater: 1149, prevElec: 1116 },
+  { id: '5', name: 'นางสาวปิโยรส ใจเอื้อ,นางสาวชุลีมาศ คำบุญเรือง', type: 'house', prevWater: 1552, prevElec: 1549 },
+  { id: '6', name: 'บ้านพักครูจีน', type: 'house', prevWater: 899, prevElec: 695 },
+  { id: '7', name: 'นางสาวรัตนา สบายจิตร', type: 'house', prevWater: 1837, prevElec: 1825 },
+  { id: '8', name: 'นายเจษฏาวัชส์ เสียงเย็น,นายอดิสรณ์ ปินตามูล', type: 'house', prevWater: 1696, prevElec: 1682 },
+  { id: '9', name: 'นายพงศธร โพธิแก้ว', type: 'house', prevWater: 1834, prevElec: 1808 },
+  { id: '10', name: 'นางจีรพา กันทา', type: 'house', prevWater: 2450, prevElec: 2409 },
+  { id: '11', name: 'น.ส.ลัดดาวัลย์ บุญคุ้ม', type: 'house', prevWater: 1716, prevElec: 1700 },
+  { id: '12', name: 'น.ส.ญาณกร ศรีชาติ', type: 'house', prevWater: 1418, prevElec: 1405 },
+  { id: '13', name: 'นางดารากร จางคพิเชียร', type: 'house', prevWater: 1909, prevElec: 1881 },
+  { id: '14', name: 'นางสาวเจนจิรา จันทร์หล้า', type: 'house', prevWater: 2270, prevElec: 2249 },
+  { id: '15', name: 'น.ส.กานท์ชญา อ่อนนวล', type: 'house', prevWater: 3214, prevElec: 3192 },
+  { id: '16', name: 'นางดวงจันทร์ หลายแห่ง', type: 'house', prevWater: 1179, prevElec: 1164 },
+  { id: '17', name: 'นายเฉลิมพล ปามา,นายกัญจน์ณัฏฐ์ โลกคำลือ', type: 'house', prevWater: 1835, prevElec: 1826 },
+  { id: 'F1', name: 'นายณัฐพงศ์ คำเป็ง', type: 'flat', prevWater: 756, prevElec: 753 },
+  { id: 'F2', name: 'น.ส.กันยา กันทะ', type: 'flat', prevWater: 1590, prevElec: 0 },
+  { id: 'F3', name: 'น.ส.ขวัญดาว วงษ์พันธ์,น.ส.อรอนงค์ ยามเลย', type: 'flat', prevWater: 1501, prevElec: 0 },
+  { id: 'F4', name: 'แฟลตครูญี่ปุ่น', type: 'flat', prevWater: 749, prevElec: 0 },
+  { id: 'F5', name: 'นายสุมงคล จ่อยพิรัตน์', type: 'flat', prevWater: 1656, prevElec: 0 },
+  { id: 'F6', name: 'นายทรงศักดิ์ แก้ววิลัย', type: 'flat', prevWater: 46, prevElec: 0 },
+  { id: 'F7', name: 'นายพงศกร หงษ์ระนัย', type: 'flat', prevWater: 1255, prevElec: 0 },
+  { id: 'F8', name: 'นายพงศกร วังศิลา,นายอภินันท์ ผ่องกมล', type: 'flat', prevWater: 1029, prevElec: 0 },
+  { id: 'F9', name: 'น.ส.สุกันญา ตามสมัย,น.ส.กัญนิกา สีเสน', type: 'flat', prevWater: 50, prevElec: 0 },
+  { id: 'F10', name: 'น.ส.ดารากรณ์ นาคสุกเอี่ยม', type: 'flat', prevWater: 57, prevElec: 0 },
+  { id: 'F11', name: 'นางสาวกนกพร ภู่ปรางทอง', type: 'flat', prevWater: 917, prevElec: 0 },
+  { id: 'F12', name: 'นายราชนุชา อินจันทร์', type: 'flat', prevWater: 31, prevElec: 0 },
+  { id: 'F13', name: 'น.ส.จริญญา ศิลธรรม,น.ส.ปาริฉัตร์ คันธิสา', type: 'flat', prevWater: 1728, prevElec: 0 },
+  { id: 'F14', name: 'นายจิรพันธ์ จันจินะ,นายอุดม พลทองมาก', type: 'flat', prevWater: 1294, prevElec: 0 },
+  { id: 'F15', name: 'นางสาวรุจิรา กาจินา', type: 'flat', prevWater: 1349, prevElec: 0 },
+  { id: 'F16', name: 'นายจรูญพงษ์ ชลสินธุ์', type: 'flat', prevWater: 36, prevElec: 0 },
 ];
 
 function WaterRecordPage() {
@@ -857,6 +858,8 @@ function WaterRecordPage() {
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear() + 543);
   const [exporting, setExporting] = useState(false);
+  const [editMode, setEditMode] = useState(false);
+  const [prevReadings, setPrevReadings] = useState<Record<string, number>>({});
 
   const thaiMonths = ['มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน', 
                       'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'];
@@ -869,12 +872,19 @@ function WaterRecordPage() {
         if (res.success && res.data?.waterUnitPrice) setWaterRate(Number(res.data.waterUnitPrice));
       } catch { /* use default */ }
     })();
+    // Initialize prevReadings from MOCK_RESIDENTS
+    const initial: Record<string, number> = {};
+    MOCK_RESIDENTS.forEach(r => { initial[r.id] = r.prevWater; });
+    setPrevReadings(initial);
   }, []);
 
   const houses = MOCK_RESIDENTS.filter(r => r.type === 'house');
   const flats = MOCK_RESIDENTS.filter(r => r.type === 'flat');
 
-  const getUsage = (id: string, prev: number) => {
+  const getPrevReading = (id: string) => prevReadings[id] ?? MOCK_RESIDENTS.find(r => r.id === id)?.prevWater ?? 0;
+
+  const getUsage = (id: string) => {
+    const prev = getPrevReading(id);
     const current = parseInt(readings[id] || '');
     if (isNaN(current) || current < prev) return { units: 0, cost: 0, valid: false };
     const units = current - prev;
@@ -898,8 +908,8 @@ function WaterRecordPage() {
   };
 
   const renderTable = (title: string, residents: typeof MOCK_RESIDENTS) => {
-    const totalUnits = residents.reduce((s, r) => s + getUsage(r.id, r.prevWater).units, 0);
-    const totalCost = residents.reduce((s, r) => s + getUsage(r.id, r.prevWater).cost, 0);
+    const totalUnits = residents.reduce((s, r) => s + getUsage(r.id).units, 0);
+    const totalCost = residents.reduce((s, r) => s + getUsage(r.id).cost, 0);
 
     return (
       <div className="mb-6">
@@ -919,12 +929,29 @@ function WaterRecordPage() {
               </thead>
               <tbody>
                 {residents.map((r, idx) => {
-                  const usage = getUsage(r.id, r.prevWater);
+                  const usage = getUsage(r.id);
+                  const prevVal = getPrevReading(r.id);
                   return (
                     <tr key={r.id} className={`border-b border-gray-100 ${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'} hover:bg-blue-50/30 transition`}>
                       <td className="text-center px-2 py-2.5 font-mono text-gray-600 border-r border-gray-100">{r.id}</td>
                       <td className="px-3 py-2.5 text-gray-800 border-r border-gray-100">{r.name}</td>
-                      <td className="text-center px-2 py-2.5 font-mono text-gray-600 border-r border-gray-100">{r.prevWater}</td>
+                      <td className="text-center px-1 py-1.5 border-r border-gray-100">
+                        {editMode ? (
+                          <input
+                            type="text"
+                            inputMode="numeric"
+                            pattern="[0-9]*"
+                            value={prevVal}
+                            onChange={e => {
+                              const v = e.target.value.replace(/[^0-9]/g, '');
+                              setPrevReadings(prev => ({ ...prev, [r.id]: parseInt(v) || 0 }));
+                            }}
+                            className="w-full px-2 py-1.5 text-center font-mono border border-orange-400 rounded bg-orange-50 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                          />
+                        ) : (
+                          <span className="font-mono text-gray-600">{prevVal}</span>
+                        )}
+                      </td>
                       <td className="text-center px-1 py-1.5 border-r border-gray-100">
                         <input
                           type="text"
@@ -963,12 +990,12 @@ function WaterRecordPage() {
     );
   };
 
-  const allUnits = [...houses, ...flats].reduce((s, r) => s + getUsage(r.id, r.prevWater).units, 0);
-  const allCost = [...houses, ...flats].reduce((s, r) => s + getUsage(r.id, r.prevWater).cost, 0);
-  const houseUnits = houses.reduce((s, r) => s + getUsage(r.id, r.prevWater).units, 0);
-  const houseCost = houses.reduce((s, r) => s + getUsage(r.id, r.prevWater).cost, 0);
-  const flatUnits = flats.reduce((s, r) => s + getUsage(r.id, r.prevWater).units, 0);
-  const flatCost = flats.reduce((s, r) => s + getUsage(r.id, r.prevWater).cost, 0);
+  const allUnits = [...houses, ...flats].reduce((s, r) => s + getUsage(r.id).units, 0);
+  const allCost = [...houses, ...flats].reduce((s, r) => s + getUsage(r.id).cost, 0);
+  const houseUnits = houses.reduce((s, r) => s + getUsage(r.id).units, 0);
+  const houseCost = houses.reduce((s, r) => s + getUsage(r.id).cost, 0);
+  const flatUnits = flats.reduce((s, r) => s + getUsage(r.id).units, 0);
+  const flatCost = flats.reduce((s, r) => s + getUsage(r.id).cost, 0);
 
   return (
     <div className="space-y-5">
@@ -1005,6 +1032,14 @@ function WaterRecordPage() {
           </div>
           <div className="flex flex-col gap-2">
             <button
+              onClick={() => setEditMode(!editMode)}
+              className={`px-4 py-2 text-xs font-medium rounded-lg transition shadow-sm ${
+                editMode ? 'bg-orange-500 text-white hover:bg-orange-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              }`}
+            >
+              {editMode ? '🔒 ปิดแก้ไข' : '✏️ แก้ไขมิเตอร์เก่า'}
+            </button>
+            <button
               onClick={handleSave}
               disabled={saving}
               className="px-5 py-2 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition shadow-sm disabled:opacity-50"
@@ -1021,6 +1056,14 @@ function WaterRecordPage() {
           </div>
         </div>
       </div>
+
+      {editMode && (
+        <div className="bg-orange-50 border-l-4 border-orange-500 p-3 rounded">
+          <p className="text-sm text-orange-800">
+            <strong>⚠️ โหมดแก้ไข:</strong> คุณสามารถแก้ไขเลขมิเตอร์ก่อนหน้าได้ในคอลัมน์ที่ 3 (พื้นหลังสีส้ม)
+          </p>
+        </div>
+      )}
 
       {renderTable('🏠 บ้านพักครู', houses)}
       {renderTable('🏢 แฟลต', flats)}
