@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>แจ้งซ่อม/คำร้อง | HOME PPK</title>
+  <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+  <header>
+    <h1>แจ้งซ่อม/คำร้อง</h1>
+  </header>
+  <main id="main-content">
+    <section id="request-form-section">
+      <form id="request-form">
+        <label>ประเภทคำร้อง
+          <select name="type" required>
+            <option value="repair">แจ้งซ่อม</option>
+            <option value="other">คำร้องทั่วไป</option>
+          </select>
+        </label>
+        <label>รายละเอียด
+          <textarea name="detail" required></textarea>
+        </label>
+        <button type="submit">ส่งคำร้อง</button>
+      </form>
+    </section>
+    <section id="request-history-section">
+      <!-- ประวัติคำร้องจะถูกเติมโดย JS -->
+    </section>
+  </main>
+  <script src="js/api.js"></script>
+  <script src="js/requests.js"></script>
+</body>
+</html>

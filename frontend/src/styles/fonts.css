@@ -1,0 +1,157 @@
+/**
+ * Font Configuration for Thai Language Support
+ * Supports multiple device types and browsers
+ */
+
+/* Google Fonts Import - Thai & English */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&display=swap');
+
+/* Define Font Variables */
+:root {
+  /* Primary font stack - Thai optimized */
+  --font-primary: 'IBM Plex Sans Thai', 'Sarabun', 'Tahoma', 'Cordia New', sans-serif;
+  
+  /* Fallback English fonts */
+  --font-english: 'Inter', 'Helvetica Neue', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  
+  /* Combined font for both Thai and English */
+  --font-family: 'IBM Plex Sans Thai', 'Inter', 'Sarabun', 'Tahoma', system-ui, -apple-system, sans-serif;
+  
+  /* Monospace for code/numbers */
+  --font-mono: 'Courier New', 'IBM Plex Mono', monospace;
+  
+  /* Font sizes for responsiveness */
+  --font-size-xs: clamp(0.75rem, 1vw, 0.875rem);
+  --font-size-sm: clamp(0.875rem, 1.2vw, 1rem);
+  --font-size-base: clamp(1rem, 1.5vw, 1.125rem);
+  --font-size-lg: clamp(1.125rem, 2vw, 1.5rem);
+  --font-size-xl: clamp(1.5rem, 2.5vw, 1.875rem);
+  --font-size-2xl: clamp(1.875rem, 3vw, 2.25rem);
+  
+  /* Line height for better readability */
+  --line-height-tight: 1.25;
+  --line-height-normal: 1.5;
+  --line-height-relaxed: 1.75;
+}
+
+/* Apply font globally */
+html {
+  font-family: var(--font-family);
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: var(--font-family);
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-normal);
+  font-feature-settings: 'kern' 1;
+}
+
+/* English text optimization */
+p, span, div {
+  font-family: var(--font-family);
+}
+
+/* Thai text specific styling */
+:lang(th) {
+  font-family: var(--font-primary);
+  word-break: break-word;
+  word-wrap: break-word;
+}
+
+/* headings */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-family);
+  font-feature-settings: 'liga' 1, 'kern' 1;
+}
+
+/* Input Thai support - Critical for mobile & all browsers */
+input:lang(th),
+textarea:lang(th),
+select:lang(th),
+input[lang="th"],
+textarea[lang="th"],
+button {
+  font-family: var(--font-family);
+  font-size: var(--font-size-base);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Thai number format support */
+.number-thai,
+.amount,
+.price {
+  font-feature-settings: 'tnum' 1;
+  font-family: var(--font-mono);
+  letter-spacing: 0.05em;
+}
+
+/* Thai date text */
+.date-thai,
+time {
+  font-feature-settings: 'tnum' 1;
+  font-family: var(--font-family);
+}
+
+/* Code blocks */
+code, pre {
+  font-family: var(--font-mono);
+}
+
+/* Link text */
+a {
+  font-family: inherit;
+}
+
+/* Responsive font scaling for mobile */
+@media (max-width: 640px) {
+  html {
+    font-size: 14px;
+  }
+  
+  body {
+    font-size: var(--font-size-sm);
+  }
+  
+  h1 { font-size: var(--font-size-xl); }
+  h2 { font-size: var(--font-size-lg); }
+  h3 { font-size: var(--font-size-base); }
+}
+
+/* Responsive font scaling for tablet */
+@media (min-width: 641px) and (max-width: 1024px) {
+  html {
+    font-size: 15px;
+  }
+  
+  body {
+    font-size: var(--font-size-base);
+  }
+}
+
+/* Responsive font scaling for desktop */
+@media (min-width: 1025px) {
+  html {
+    font-size: 16px;
+  }
+  
+  body {
+    font-size: var(--font-size-base);
+  }
+}
+
+/* High DPI Screens (Retina) */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  body {
+    -webkit-font-smoothing: subpixel-antialiased;
+  }
+}
+
+/* Support for font-variation-settings (if available) */
+@supports (font-variation-settings: normal) {
+  body {
+    font-variation-settings: 'opsz' auto;
+  }
+}

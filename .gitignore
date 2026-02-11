@@ -1,0 +1,42 @@
+// .gitignore for HOME PPK GAS project
+
+# Dependencies
+node_modules/
+package-lock.json
+yarn.lock
+
+# Production
+dist/
+build/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+logs/
+
+# Testing
+coverage/
+.nyc_output/
+
+# Temporary
+temp/
+tmp/
+
+# Configuration (with secrets)
+config.local.js
+
+# GAS specific
+*.js.bak
+*.gs.bak

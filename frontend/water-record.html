@@ -1,0 +1,78 @@
+
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>บันทึกค่าน้ำ | HOME PPK</title>
+  <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+  <!-- ========== HEADER ========== -->
+  <header>
+    <div class="container">
+      <div class="header-logo">
+        <h1>HOME PPK</h1>
+        <p id="appSubtitle">ระบบจัดการงานส่งเสริม กำกับ ดูแล และพัฒนาบ้านพักครู 2569</p>
+      </div>
+      <div class="header-controls">
+        <div class="language-buttons">
+          <button class="lang-btn active" onclick="switchLanguage('th')">🇹🇭 ไทย</button>
+          <button class="lang-btn" onclick="switchLanguage('en')">🇺🇸 English</button>
+        </div>
+        <div class="user-info">
+          <span id="userName">Admin User</span>
+          <button class="logout-btn" onclick="logout()" id="logoutBtn">Logout</button>
+        </div>
+      </div>
+    </div>
+  </header>
+  <!-- ========== SIDEBAR + MAIN ========== -->
+  <div class="container-main">
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="sidebar-group">
+        <ul class="sidebar-menu">
+          <li><a class="menu-item" href="payments.html"><span class="sidebar-icon">💰</span><span>ยอดชำระ / ส่งสลิป</span></a></li>
+          <li><a class="menu-item" href="payment-history.html"><span class="sidebar-icon">📑</span><span>ประวัติการชำระ</span></a></li>
+          <li><a class="menu-item active" href="#"><span class="sidebar-icon">💧</span><span>บันทึกค่าน้ำ</span></a></li>
+          <li><a class="menu-item" href="electricity-record.html"><span class="sidebar-icon">⚡</span><span>บันทึกค่าไฟ</span></a></li>
+          <li><a class="menu-item" href="monthly-bill.html"><span class="sidebar-icon">📆</span><span>แจ้งยอดชำระประจำเดือน</span></a></li>
+          <li><a class="menu-item" href="slip-verify.html"><span class="sidebar-icon">🔎</span><span>ตรวจสลิป (Admin)</span></a></li>
+          <li><a class="menu-item" href="disbursement.html"><span class="sidebar-icon">💸</span><span>เบิกจ่าย</span></a></li>
+          <li><a class="menu-item" href="accounting.html"><span class="sidebar-icon">📒</span><span>บัญชีรายรับรายจ่าย</span></a></li>
+          <li><a class="menu-item" href="admin-requests-queue.html"><span class="sidebar-icon">🗂️</span><span>คำร้องและการจัดคิว (Admin)</span></a></li>
+          <li><a class="menu-item" href="profile.html"><span class="sidebar-icon">👤</span><span>ข้อมูลส่วนตัว</span></a></li>
+          <li><a class="menu-item" href="regulations.html"><span class="sidebar-icon">📜</span><span>ระเบียบ</span></a></li>
+          <li><a class="menu-item" href="forms.html"><span class="sidebar-icon">📝</span><span>แบบฟอร์ม</span></a></li>
+          <li><a class="menu-item" href="manual.html"><span class="sidebar-icon">📖</span><span>คู่มือ</span></a></li>
+          <li><a class="menu-item" href="statistics-report.html"><span class="sidebar-icon">📈</span><span>สถิติรายงาน</span></a></li>
+          <li><a class="menu-item" href="admin-settings.html"><span class="sidebar-icon">⚙️</span><span>ตั้งค่าแอดมิน</span></a></li>
+          <li><a class="menu-item" href="backup.html"><span class="sidebar-icon">💾</span><span>สำรองข้อมูล</span></a></li>
+        </ul>
+      </div>
+    </aside>
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+      <div class="page-header">
+        <h2 id="waterRecordTitle">บันทึกค่าน้ำ</h2>
+        <p id="waterRecordDesc">ตารางบันทึกค่าน้ำจะแยกบ้านพักครู/แฟลต</p>
+      </div>
+      <div class="table-wrapper">
+        <section id="water-record-section">
+          <!-- ตารางบันทึกค่าน้ำจะแยกบ้านพักครู/แฟลต จะถูกเติมโดย JS -->
+        </section>
+      </div>
+    </main>
+  </div>
+  <!-- ========== FOOTER ========== -->
+  <footer>
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+      <p id="footerText">HOME PPK v1.0.0 | ระบบจัดการงานส่งเสริม | <span id="currentDate"></span></p>
+      <p id="credits" style="text-align: right; margin-top: 0.5rem;">ออกแบบและพัฒนาโดย ครูพงศธร โพธิแก้ว งานส่งเสริม กำกับ ดูแล และพัฒนาบ้านพักครู</p>
+    </div>
+  </footer>
+  <script src="js/api.js"></script>
+  <script src="js/water-record.js"></script>
+</body>
+</html>
