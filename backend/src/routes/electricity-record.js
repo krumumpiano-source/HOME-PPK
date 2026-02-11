@@ -1,7 +1,7 @@
 // backend/src/routes/electricity-record.js
 // SPEC: GET ตารางค่าไฟบ้านพักครู/แฟลต, POST บันทึกค่าไฟล่าสุด, lost, ยอดรวม, ปัดเศษขึ้น, คำนวณส่วนต่าง
-const express = require('express');
-const router = express.Router();
+import { Router } from 'express';
+const router = Router();
 
 // Mock config (admin will set later)
 const ELECTRIC_RATE = 5; // บาทต่อหน่วย
@@ -54,4 +54,4 @@ router.post('/summary', (req, res) => {
   res.json({ success: true });
 });
 
-module.exports = router;
+export default router;

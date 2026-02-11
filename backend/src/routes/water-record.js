@@ -1,7 +1,7 @@
 // backend/src/routes/water-record.js
 // SPEC: GET ตารางค่าน้ำบ้านพักครู/แฟลต, POST บันทึกเลขมิเตอร์ล่าสุด, คำนวณยอดเงินอัตโนมัติ
-const express = require('express');
-const router = express.Router();
+import { Router } from 'express';
+const router = Router();
 
 // Mock config (admin will set later)
 const WATER_RATE = 8; // บาทต่อหน่วย
@@ -36,4 +36,4 @@ router.post('/save', (req, res) => {
   res.json({ success: true });
 });
 
-module.exports = router;
+export default router;

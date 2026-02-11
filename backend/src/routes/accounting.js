@@ -1,7 +1,7 @@
 // backend/src/routes/accounting.js
 // SPEC: GET ตารางบัญชี, POST บันทึกรายรับรายจ่าย, รออนุมัติแอดมิน, mock ข้อมูล
-const express = require('express');
-const router = express.Router();
+import { Router } from 'express';
+const router = Router();
 
 let entries = [
   { date: '2026-02-01', type: 'income', title: 'ค่าส่วนกลาง', amount: 330, status: 'approved' },
@@ -30,4 +30,4 @@ router.post('/save', (req, res) => {
   res.json({ success: true });
 });
 
-module.exports = router;
+export default router;

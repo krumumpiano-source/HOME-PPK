@@ -1,7 +1,7 @@
 // backend/src/routes/disbursement.js
 // SPEC: GET ตารางเบิกจ่าย, POST actual amount, คำนวณส่วนต่าง, mock ข้อมูล
-const express = require('express');
-const router = express.Router();
+import { Router } from 'express';
+const router = Router();
 
 // Mock config
 const GARBAGE_FEE = 310;
@@ -35,4 +35,4 @@ router.post('/actual', (req, res) => {
   res.json({ success: true });
 });
 
-module.exports = router;
+export default router;

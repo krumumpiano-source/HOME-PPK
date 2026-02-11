@@ -1,7 +1,7 @@
 // backend/src/routes/forms.js
 // SPEC: GET/POST แบบฟอร์ม 4 แบบ, mock ข้อมูล
-const express = require('express');
-const router = express.Router();
+import { Router } from 'express';
+const router = Router();
 
 let forms = {
   request: [],
@@ -23,4 +23,4 @@ router.post('/save', (req, res) => {
   res.json({ success: true });
 });
 
-module.exports = router;
+export default router;

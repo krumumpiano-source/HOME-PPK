@@ -1,6 +1,6 @@
 
-const express = require('express');
-const router = express.Router();
+import { Router } from 'express';
+const router = Router();
 const expenses = [
   { date: '2026-02-05', title: 'ค่าทำความสะอาด', amount: 300, note: '' },
   { date: '2026-01-15', title: 'ค่าซ่อมแซมอุปกรณ์', amount: 1200, note: 'เปลี่ยนหลอดไฟ' },
@@ -15,4 +15,4 @@ router.get('/', (req, res) => {
 
 
 
-module.exports = router;
+export default router;

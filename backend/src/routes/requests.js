@@ -1,6 +1,6 @@
 
-const express = require('express');
-const router = express.Router();
+import { Router } from 'express';
+const router = Router();
 let requests = [
   { date: '2026-02-01', type: 'repair', detail: 'ไฟห้องน้ำดับ', status: 'รอดำเนินการ' },
   { date: '2026-01-20', type: 'other', detail: 'ขอเปลี่ยนห้อง', status: 'เสร็จสิ้น' }
@@ -29,4 +29,4 @@ router.post('/', (req, res) => {
   res.json({ success: true, request: newRequest });
 });
 
-module.exports = router;
+export default router;

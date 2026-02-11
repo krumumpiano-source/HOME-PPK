@@ -1,6 +1,6 @@
 // AdminRequestsQueue.js - mock API for admin-requests-queue
-const express = require('express');
-const router = express.Router();
+import { Router } from 'express';
+const router = Router();
 
 // Mock data
 let requests = [
@@ -38,4 +38,4 @@ router.post('/queue', (req, res) => {
   res.status(400).json({ error: 'Invalid queue' });
 });
 
-module.exports = router;
+export default router;

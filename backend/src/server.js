@@ -1,21 +1,3 @@
-import formsRoute from './routes/forms.js';
-app.use('/api/forms', formsRoute);
-import adminSettingsRoute from './routes/admin-settings.js';
-app.use('/api/admin-settings', adminSettingsRoute);
-import profileRoute from './routes/profile.js';
-app.use('/api/profile', profileRoute);
-import slipVerifyRoute from './routes/slip-verify.js';
-app.use('/api/slip-verify', slipVerifyRoute);
-import accountingRoute from './routes/accounting.js';
-app.use('/api/accounting', accountingRoute);
-import disbursementRoute from './routes/disbursement.js';
-app.use('/api/disbursement', disbursementRoute);
-import monthlyBillRoute from './routes/monthly-bill.js';
-app.use('/api/monthly-bill', monthlyBillRoute);
-import electricityRecordRoute from './routes/electricity-record.js';
-app.use('/api/electricity-record', electricityRecordRoute);
-import adminRequestsQueueRoute from './routes/AdminRequestsQueue.js';
-app.use('/api/admin-requests-queue', adminRequestsQueueRoute);
 /**
  * HOME PPK - Backend API Server
  * Runs on Node.js/Express for Render deployment
@@ -41,7 +23,6 @@ import paymentRoutes from './routes/payments.js';
 import currentBillRoute from './routes/current-bill.js';
 import paymentRoute from './routes/payment.js';
 import paymentHistoryRoute from './routes/payment-history.js';
-app.use('/api/payment', paymentRoute);
 import requestRoutes from './routes/requests.js';
 import expenseRoutes from './routes/expenses.js';
 import utilityRoutes from './routes/utilities.js';
@@ -49,6 +30,15 @@ import regulationRoutes from './routes/regulations.js';
 import adminRoutes from './routes/admin.js';
 import statisticsRoutes from './routes/statistics.js';
 import waterRecordRoute from './routes/water-record.js';
+import formsRoute from './routes/forms.js';
+import adminSettingsRoute from './routes/admin-settings.js';
+import profileRoute from './routes/profile.js';
+import slipVerifyRoute from './routes/slip-verify.js';
+import accountingRoute from './routes/accounting.js';
+import disbursementRoute from './routes/disbursement.js';
+import monthlyBillRoute from './routes/monthly-bill.js';
+import electricityRecordRoute from './routes/electricity-record.js';
+import adminRequestsQueueRoute from './routes/AdminRequestsQueue.js';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -88,6 +78,7 @@ app.use('/api/bills', billRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/payments/history', paymentHistoryRoute);
 app.use('/api/current-bill', currentBillRoute);
+app.use('/api/payment', paymentRoute);
 app.use('/api/requests', requestRoutes);
 app.use('/api/expenses', expenseRoutes);
 app.use('/api/utilities', utilityRoutes);
@@ -95,6 +86,15 @@ app.use('/api/regulations', regulationRoutes);
 app.use('/api/statistics', statisticsRoutes);
 app.use('/api/water-record', waterRecordRoute);
 app.use('/api/admin', adminRoutes);
+app.use('/api/forms', formsRoute);
+app.use('/api/admin-settings', adminSettingsRoute);
+app.use('/api/profile', profileRoute);
+app.use('/api/slip-verify', slipVerifyRoute);
+app.use('/api/accounting', accountingRoute);
+app.use('/api/disbursement', disbursementRoute);
+app.use('/api/monthly-bill', monthlyBillRoute);
+app.use('/api/electricity-record', electricityRecordRoute);
+app.use('/api/admin-requests-queue', adminRequestsQueueRoute);
 
 // Root endpoint
 app.get('/', (req, res) => {

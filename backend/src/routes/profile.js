@@ -1,7 +1,7 @@
 // backend/src/routes/profile.js
 // SPEC: GET/POST ข้อมูลส่วนตัว, ผู้ร่วมพักอาศัย, mock ข้อมูล
-const express = require('express');
-const router = express.Router();
+import { Router } from 'express';
+const router = Router();
 
 let profile = {
   prefix: 'นาย',
@@ -33,4 +33,4 @@ router.post('/save', (req, res) => {
   res.json({ success: true });
 });
 
-module.exports = router;
+export default router;

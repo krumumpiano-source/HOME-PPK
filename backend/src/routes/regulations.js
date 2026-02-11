@@ -1,6 +1,6 @@
 
-const express = require('express');
-const router = express.Router();
+import { Router } from 'express';
+const router = Router();
 const regulations = [
   { date: '2026-02-01', title: 'งดใช้น้ำชั่วคราว', detail: 'จะมีการปิดน้ำเพื่อซ่อมแซมในวันที่ 3 ก.พ. 2026' },
   { date: '2026-01-10', title: 'ประกาศห้ามเลี้ยงสัตว์', detail: 'ห้ามเลี้ยงสัตว์ในหอพักทุกชนิด' },
@@ -15,4 +15,4 @@ router.get('/', (req, res) => {
 
 
 
-module.exports = router;
+export default router;

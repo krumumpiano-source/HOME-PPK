@@ -1,7 +1,7 @@
 // backend/src/routes/admin-settings.js
 // SPEC: GET/POST ตั้งค่าแอดมิน, mock ข้อมูล
-const express = require('express');
-const router = express.Router();
+import { Router } from 'express';
+const router = Router();
 
 let settings = {
   waterRate: 8,
@@ -21,4 +21,4 @@ router.post('/save', (req, res) => {
   res.json({ success: true });
 });
 
-module.exports = router;
+export default router;

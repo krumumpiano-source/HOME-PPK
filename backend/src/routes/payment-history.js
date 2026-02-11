@@ -1,7 +1,7 @@
 // backend/src/routes/payment-history.js
 // SPEC: API สำหรับประวัติการชำระ (GET /api/payments/history)
-const express = require('express');
-const router = express.Router();
+import { Router } from 'express';
+const router = Router();
 
 // Mock data: ประวัติการชำระ (แยกตามรอบบิล, รองรับหลายครั้งต่อรอบ)
 const paymentHistory = [
@@ -29,4 +29,4 @@ router.get('/', (req, res) => {
   res.json({ history: paymentHistory });
 });
 
-module.exports = router;
+export default router;

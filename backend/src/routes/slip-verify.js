@@ -1,7 +1,7 @@
 // backend/src/routes/slip-verify.js
 // SPEC: GET ตารางสลิป, POST อนุมัติ, POST ส่งใบเสร็จ, mock ข้อมูล
-const express = require('express');
-const router = express.Router();
+import { Router } from 'express';
+const router = Router();
 
 let slips = [
   { id: '1', bill: '2/2026', name: 'สมชาย ใจดี', amount: 1110, image: 'https://via.placeholder.com/120x60?text=Slip1', status: 'pending' },
@@ -29,4 +29,4 @@ router.post('/send-receipt', (req, res) => {
   res.json({ success: true });
 });
 
-module.exports = router;
+export default router;

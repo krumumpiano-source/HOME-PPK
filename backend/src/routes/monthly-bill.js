@@ -1,7 +1,7 @@
 // backend/src/routes/monthly-bill.js
 // SPEC: GET ตารางแจ้งยอดชำระ, mock export/send/remind
-const express = require('express');
-const router = express.Router();
+import { Router } from 'express';
+const router = Router();
 
 // Mock config
 const CENTRAL_AMOUNT = 110;
@@ -32,4 +32,4 @@ router.post('/remind', (req, res) => {
   res.json({ success: true });
 });
 
-module.exports = router;
+export default router;
