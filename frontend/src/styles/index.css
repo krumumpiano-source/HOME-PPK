@@ -44,7 +44,7 @@ html, body, #root {
 }
 
 body {
-  font-family: var(--font-family);
+  font-family: 'Inter', sans-serif;
   background-color: var(--gray-50);
   color: var(--gray-900);
   line-height: 1.5;
@@ -71,13 +71,11 @@ a {
 }
 
 button {
-  font-family: inherit;
-  cursor: pointer;
-  transition: all var(--transition-fast);
+  @apply bg-blue-500 text-white font-bold py-2 px-4 rounded;
+  transition: background-color 0.3s;
   
-  &:focus-visible {
-    outline: 2px solid var(--primary);
-    outline-offset: 2px;
+  &:hover {
+    @apply bg-blue-600;
   }
 }
 
@@ -106,6 +104,21 @@ input, textarea, select {
 @media (min-width: 1025px) {
   body {
     font-size: 16px;
+  }
+}
+
+/* Added responsive design improvements */
+@media (max-width: 768px) {
+  body {
+    @apply text-sm;
+  }
+
+  .container {
+    @apply px-4;
+  }
+
+  button {
+    @apply w-full;
   }
 }
 
@@ -189,3 +202,8 @@ input, textarea, select {
     display: none;
   }
 }
+
+/* Added Tailwind CSS improvements */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;

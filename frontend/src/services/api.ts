@@ -5,7 +5,7 @@
 
 // Configuration - Render deployment URL
 export const GAS_CONFIG = {
-  DEPLOYMENT_URL: import.meta.env.VITE_API_URL || 'https://home-ppk.onrender.com/api',
+  DEPLOYMENT_URL: (import.meta as any).env.VITE_API_URL || 'https://home-ppk.onrender.com/api',
   TIMEOUT: 30000,
 };
 
@@ -74,6 +74,21 @@ export async function callGasApi<T = any>(
     };
   }
 }
+
+// Enhanced error handling for API calls
+export const fetchWithErrorHandling = async (url: string, options: RequestInit) => {
+  try {
+    const response = await fetch(url, options);
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'An error occurred');
+    }
+    return response.json();
+  } catch (error) {
+    console.error('API Error:', error);
+    throw error;
+  }
+};
 
 // ============ User APIs ============
 
@@ -352,3 +367,53 @@ export async function sendNotifications(message: string, recipientIds?: number[]
 export async function exportDataToFile(dataType: string, format: 'csv' | 'xlsx') {
   return callGasApi(`admin/export/${dataType}?format=${format}`);
 }
+
+// Added authentication API endpoints
+export const login = async (username: string, password: string) => {
+  const response = await fetch('/api/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username, password }),
+  });
+  if (!response.ok) {
+    throw new Error('Login failed');
+  }
+  return response.json();
+};
+
+export const register = async (username: string, password: string) => {
+  const response = await fetch('/api/register', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username, password }),
+  });
+  if (!response.ok) {
+    throw new Error('Registration failed');
+  }
+  return response.json();
+};
+
+// Added data export/import API endpoints
+export const exportData = async () => {
+  const response = await fetch('/api/export', {
+    method: 'GET',
+  });
+  if (!response.ok) {
+    throw new Error('Export failed');
+  }
+  return response.blob();
+};
+
+export const importData = async (file: File) => {
+  const formData = new FormData();
+  formData.append('file', file);
+
+  const response = await fetch('/api/import', {
+    method: 'POST',
+    body: formData,
+  });
+  if (!response.ok) {
+    throw new Error('Import failed');
+  }
+  return response.json();
+};

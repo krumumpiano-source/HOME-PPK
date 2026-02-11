@@ -4,23 +4,18 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
 import {
   authenticateUser,
-  getAllUsers,
   getBills,
   getPaymentSlips,
   getRequests,
   getExpenses,
   getRegulations,
-  getUtilityReadings,
   callGasApi,
 } from '../services/api';
-import { formatDateThaiWithDayName } from '../utils/dateUtils';
-import { LanguageSwitcher } from '../components/LanguageSwitcher';
 
 // ============ Types ============
-type PageId =
+export type PageId =
   | 'dashboard'
   | 'payments'
   | 'monthly-bill'
@@ -36,8 +31,8 @@ type PageId =
   | 'disbursement'
   | 'regulations'
   | 'profile'
-  | 'admin-settings';
-
+  | 'admin-settings'
+  | 'send-slip';
 interface MenuItem {
   id: PageId;
   icon: string;
@@ -62,89 +57,73 @@ const MENU_ITEMS: MenuItem[] = [
   { id: 'regulations', icon: '📖', label: 'ระเบียบ / ประกาศ', group: 'อื่น ๆ' },
   { id: 'profile', icon: '👤', label: 'ข้อมูลส่วนตัว', group: 'อื่น ๆ' },
   { id: 'admin-settings', icon: '⚙️', label: 'ตั้งค่าระบบ', group: 'อื่น ๆ' },
+  { id: 'send-slip', icon: '📤', label: 'ส่งสลิป', group: 'การเงิน' },
 ];
+
+export { MENU_ITEMS };
 
 // ============ Main App ============
 export default function App() {
-  const { t } = useTranslation();
-  const [isLoading, setIsLoading] = useState(false);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [currentUser, setCurrentUser] = useState<any>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [currentPage, setCurrentPage] = useState<PageId>('dashboard');
+  const [user, setUser] = useState<any>(null);
+  const [page, setPage] = useState<PageId>('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [loginLoading, setLoginLoading] = useState(false);
+  const [loginError, setLoginError] = useState('');
 
-  const handleLogin = async (email: string, password: string) => {
-    try {
-      setIsLoading(true);
-      setError(null);
-      const response = await authenticateUser(email, password);
-      if (response.success && response.data) {
-        setCurrentUser(response.data.user || response.data);
-        setIsAuthenticated(true);
-      } else {
-        setError(response.error || 'เข้าสู่ระบบล้มเหลว');
-      }
-    } catch (err: any) {
-      setError(err.message);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleLogout = () => {
-    setCurrentUser(null);
-    setIsAuthenticated(false);
-    setCurrentPage('dashboard');
-  };
-
-  const navigateTo = (page: PageId) => {
-    setCurrentPage(page);
+  const navigateTo = (p: PageId) => {
+    setPage(p);
     setSidebarOpen(false);
   };
 
-  // ============ LOGIN ============
-  if (!isAuthenticated) {
+  const handleLogin = async (email: string, password: string) => {
+    setLoginLoading(true);
+    setLoginError('');
+    try {
+      const res = await authenticateUser(email, password);
+      if (res.success && res.data) {
+        setUser(res.data);
+      } else {
+        setLoginError(res.error || 'เข้าสู่ระบบไม่สำเร็จ');
+      }
+    } catch {
+      setLoginError('ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้');
+    }
+    setLoginLoading(false);
+  };
+
+  const handleLogout = () => {
+    setUser(null);
+    setPage('dashboard');
+  };
+
+  if (!user) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-600 to-blue-800 flex items-center justify-center p-4">
-        <div className="w-full max-w-sm bg-white rounded-2xl shadow-2xl p-8">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center p-4">
+        <div className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md">
           <div className="text-center mb-6">
             <div className="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-3">
-              <span className="text-3xl text-white font-bold">H</span>
+              <span className="text-2xl text-white font-bold">H</span>
             </div>
-            <h1 className="text-2xl font-bold text-gray-800">HOME PPK</h1>
-            <p className="text-xs text-gray-400 mt-1">งานส่งเสริม กำกับ ดูแล และพัฒนาบ้านพักครู 2569</p>
+            <h1 className="text-xl font-bold text-gray-800">HOME PPK</h1>
+            <p className="text-sm text-gray-500 mt-1">ระบบจัดการบ้านพักครู</p>
           </div>
-
-          {error && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm">
-              {error}
-            </div>
+          {loginError && (
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-xs text-red-600">{loginError}</div>
           )}
-
-          <LoginForm onLogin={handleLogin} isLoading={isLoading} />
-
-          <p className="text-center text-xs text-gray-400 mt-6">
-            ออกแบบและพัฒนาโดย ครูพงศธร โพธิแก้ว
-          </p>
+          <LoginForm onLogin={handleLogin} isLoading={loginLoading} />
         </div>
       </div>
     );
   }
 
-  // ============ MAIN APP ============
   const groups = [...new Set(MENU_ITEMS.map(m => m.group))];
 
   return (
     <div className="min-h-screen bg-gray-100 flex">
-      {/* Sidebar Overlay (mobile) */}
       {sidebarOpen && (
         <div className="fixed inset-0 bg-black/40 z-40 lg:hidden" onClick={() => setSidebarOpen(false)} />
       )}
-
-      {/* Sidebar */}
       <aside className={`fixed lg:static inset-y-0 left-0 z-50 w-60 bg-white border-r border-gray-200 transform transition-transform duration-200 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'} flex flex-col`}>
-        {/* Sidebar Header */}
         <div className="p-4 border-b border-gray-100">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 bg-blue-600 rounded-xl flex items-center justify-center flex-shrink-0">
@@ -156,8 +135,6 @@ export default function App() {
             </div>
           </div>
         </div>
-
-        {/* Menu */}
         <nav className="flex-1 overflow-y-auto py-1 px-2">
           {groups.map(group => (
             <div key={group} className="mb-0.5">
@@ -169,9 +146,7 @@ export default function App() {
                   key={item.id}
                   onClick={() => navigateTo(item.id)}
                   className={`w-full flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-[13px] transition-colors ${
-                    currentPage === item.id
-                      ? 'bg-blue-50 text-blue-700 font-semibold'
-                      : 'text-gray-600 hover:bg-gray-50'
+                    page === item.id ? 'bg-blue-50 text-blue-700 font-semibold' : 'text-gray-600 hover:bg-gray-50'
                   }`}
                 >
                   <span className="text-sm flex-shrink-0">{item.icon}</span>
@@ -181,18 +156,14 @@ export default function App() {
             </div>
           ))}
         </nav>
-
-        {/* Sidebar Footer */}
         <div className="p-3 border-t border-gray-100">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0">
-              {(currentUser?.Name || 'U')[0]}
+              {(user?.Name || 'U')[0]}
             </div>
             <div className="min-w-0 flex-1">
-              <p className="text-xs font-medium text-gray-700 truncate">
-                {currentUser?.Title}{currentUser?.Name}
-              </p>
-              <p className="text-[10px] text-gray-400">{currentUser?.role === 'admin' ? 'ผู้ดูแลระบบ' : 'ผู้พัก'}</p>
+              <p className="text-xs font-medium text-gray-700 truncate">{user?.Title}{user?.Name}</p>
+              <p className="text-[10px] text-gray-400">{user?.role === 'admin' ? 'ผู้ดูแลระบบ' : 'ผู้พัก'}</p>
             </div>
             <button onClick={handleLogout} className="text-gray-400 hover:text-red-500 transition p-1" title="ออกจากระบบ">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -202,10 +173,7 @@ export default function App() {
           </div>
         </div>
       </aside>
-
-      {/* Main Content */}
       <div className="flex-1 flex flex-col min-h-screen">
-        {/* Top Bar */}
         <header className="bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between sticky top-0 z-30">
           <div className="flex items-center gap-3">
             <button onClick={() => setSidebarOpen(true)} className="lg:hidden p-1 text-gray-500 hover:text-gray-700">
@@ -214,22 +182,14 @@ export default function App() {
               </svg>
             </button>
             <h1 className="text-base font-bold text-gray-800">
-              {MENU_ITEMS.find(m => m.id === currentPage)?.icon}{' '}
-              {MENU_ITEMS.find(m => m.id === currentPage)?.label || 'หน้าแรก'}
+              {MENU_ITEMS.find(m => m.id === page)?.icon}{' '}
+              {MENU_ITEMS.find(m => m.id === page)?.label || 'หน้าแรก'}
             </h1>
           </div>
-          <div className="flex items-center gap-3">
-            <LanguageSwitcher />
-            <span className="text-xs text-gray-400 hidden sm:block">{formatDateThaiWithDayName(new Date())}</span>
-          </div>
         </header>
-
-        {/* Page Content */}
         <main className="flex-1 p-4 sm:p-6 overflow-auto">
-          <PageContent page={currentPage} user={currentUser} navigateTo={navigateTo} />
+          <PageContent page={page} user={user} navigateTo={navigateTo} />
         </main>
-
-        {/* Footer */}
         <footer className="bg-white border-t border-gray-100 px-4 py-2 text-center">
           <p className="text-[11px] text-gray-400">HOME PPK v1.0.0 | ออกแบบและพัฒนาโดย ครูพงศธร โพธิแก้ว</p>
         </footer>
@@ -239,12 +199,12 @@ export default function App() {
 }
 
 // ============ Page Content Router ============
-function PageContent({ page, user, navigateTo }: { page: PageId; user: any; navigateTo: (p: PageId) => void }) {
+function PageContent({ page, user, navigateTo }: { page: PageId; user: any; navigateTo: (page: PageId) => void }) {
   switch (page) {
     case 'dashboard': return <DashboardPage user={user} navigateTo={navigateTo} />;
     case 'payments': return <PaymentsPage user={user} />;
     case 'monthly-bill': return <DataPage title="แจ้งยอดชำระประจำเดือน" fetchFn={getBills} columns={['id','residentId','water','electric','commonFee','total','status']} labels={['#','รหัสผู้พัก','ค่าน้ำ','ค่าไฟ','ค่าส่วนกลาง','รวม','สถานะ']} />;
-    case 'payment-history': return <PaymentHistoryPage user={user} />;
+    case 'payment-history': return <PaymentHistoryPage />;
     case 'slip-verify': return <DataPage title="ตรวจสลิป" fetchFn={() => getPaymentSlips()} columns={['id','residentId','amount','imageUrl','status']} labels={['#','รหัสผู้พัก','จำนวนเงิน','รูปสลิป','สถานะ']} />;
     case 'water-record': return <WaterRecordPage />;
     case 'electricity-record': return <ElectricityRecordPage />;
@@ -257,6 +217,7 @@ function PageContent({ page, user, navigateTo }: { page: PageId; user: any; navi
     case 'regulations': return <DataPage title="ระเบียบ / ประกาศ" fetchFn={getRegulations} columns={['id','title','category','effectiveDate']} labels={['#','หัวข้อ','หมวดหมู่','วันที่มีผล']} />;
     case 'profile': return <ProfilePage user={user} />;
     case 'admin-settings': return <AdminSettingsPage />;
+    case 'send-slip': return <SendSlipPage />;
     default: return <DashboardPage user={user} navigateTo={navigateTo} />;
   }
 }
@@ -664,443 +625,12 @@ function PaymentsPage({ user }: { user: any }) {
   );
 }
 
-// ============ Payment History Page (ประวัติการชำระ) ============
-function PaymentHistoryPage({ user }: { user: any }) {
-  const [bills, setBills] = useState<any[]>([]);
-  const [payments, setPayments] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    (async () => {
-      try {
-        const [billRes, payRes] = await Promise.all([getBills(), callGasApi('payments')]);
-        if (billRes.success) setBills(billRes.data || []);
-        if (payRes.success) setPayments(payRes.data || []);
-      } catch { /* ignore */ }
-      setLoading(false);
-    })();
-  }, []);
-
-  const getPaymentsForBill = (billId: string) => payments.filter(p => p.billId === billId);
-
-  const getOverdueDays = (dueDate: string, paidDate: string) => {
-    if (!dueDate || !paidDate) return 0;
-    const due = new Date(dueDate);
-    const paid = new Date(paidDate);
-    const diff = Math.floor((paid.getTime() - due.getTime()) / (1000 * 60 * 60 * 24));
-    return diff > 0 ? diff : 0;
-  };
-
-  const formatDateTime = (dateStr: string) => {
-    if (!dateStr) return '—';
-    const d = new Date(dateStr);
-    const day = d.getDate().toString().padStart(2, '0');
-    const month = (d.getMonth() + 1).toString().padStart(2, '0');
-    const year = d.getFullYear() + 543;
-    const time = d.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
-    return `${day}/${month}/${year} เวลา ${time} น.`;
-  };
-
-  if (loading) {
-    return (
-      <div className="bg-white rounded-xl p-12 text-center">
-        <div className="animate-spin w-8 h-8 border-4 border-blue-200 border-t-blue-600 rounded-full mx-auto mb-3"></div>
-        <p className="text-gray-500 text-sm">กำลังโหลด...</p>
-      </div>
-    );
-  }
-
-  // Merge bills with their payments, sort newest first
-  const billsWithPayments = bills
-    .map(bill => ({ ...bill, billPayments: getPaymentsForBill(bill.id) }))
-    .filter(b => b.billPayments.length > 0 || b.status === 'paid' || b.status === 'approved')
-    .sort((a, b) => (b.period || '').localeCompare(a.period || ''));
-
-  return (
-    <div className="space-y-4">
-      <h2 className="text-lg font-bold text-gray-800">📜 ประวัติการชำระ</h2>
-
-      {billsWithPayments.length === 0 ? (
-        <div className="bg-white rounded-xl p-12 text-center">
-          <span className="text-4xl block mb-3">📭</span>
-          <p className="text-gray-500">ยังไม่มีประวัติการชำระ</p>
-        </div>
-      ) : (
-        <div className="space-y-4">
-          {billsWithPayments.map(bill => (
-            <div key={bill.id} className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-              {/* Bill Period Header */}
-              <div className="px-4 py-3 bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-gray-100">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h4 className="font-bold text-gray-800">รอบ {bill.period || '—'}</h4>
-                    <p className="text-[11px] text-gray-500 mt-0.5">บิล #{bill.id} | กำหนดชำระ: {bill.due_date || '—'}</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-xs text-gray-500">ยอดบิล</p>
-                    <p className="font-bold text-blue-600">฿{Number(bill.total_amount || 0).toLocaleString()}</p>
-                  </div>
-                </div>
-                {/* Amount breakdown */}
-                <div className="flex gap-4 mt-2 text-[11px] text-gray-500">
-                  <span>💧 ค่าน้ำ ฿{Number(bill.water_amount || 0).toLocaleString()}</span>
-                  <span>⚡ ค่าไฟ ฿{Number(bill.electricity_amount || 0).toLocaleString()}</span>
-                </div>
-              </div>
-
-              {/* Payment Records */}
-              <div className="divide-y divide-gray-50">
-                {bill.billPayments.length > 0 ? (
-                  bill.billPayments.map((pay: any, idx: number) => {
-                    const lateDays = getOverdueDays(bill.due_date, pay.createdAt);
-                    return (
-                      <div key={pay.id || idx} className="px-4 py-3">
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-1">
-                              <span className="text-xs font-bold text-gray-700">ครั้งที่ {idx + 1}</span>
-                              {pay.status === 'paid' || pay.status === 'approved' ? (
-                                <span className="px-2 py-0.5 bg-green-100 text-green-700 text-[10px] font-medium rounded-full">✅ ชำระแล้ว</span>
-                              ) : pay.status === 'pending' ? (
-                                <span className="px-2 py-0.5 bg-yellow-100 text-yellow-700 text-[10px] font-medium rounded-full">⏳ รอตรวจสอบ</span>
-                              ) : (
-                                <span className="px-2 py-0.5 bg-gray-100 text-gray-600 text-[10px] font-medium rounded-full">{pay.status}</span>
-                              )}
-                            </div>
-                            <div className="space-y-0.5 text-[11px] text-gray-500">
-                              <p>📅 ชำระเมื่อ: <span className="text-gray-700 font-medium">{formatDateTime(pay.createdAt)}</span></p>
-                              {pay.updatedAt && pay.updatedAt !== pay.createdAt && (
-                                <p>🔍 ตรวจสอบเมื่อ: <span className="text-gray-700 font-medium">{formatDateTime(pay.updatedAt)}</span></p>
-                              )}
-                              {lateDays > 0 && (
-                                <p className="text-red-500 font-medium">⚠️ ชำระล่าช้า {lateDays} วัน (จากกำหนด {bill.due_date})</p>
-                              )}
-                              {lateDays === 0 && pay.createdAt && (
-                                <p className="text-green-600">✓ ชำระตรงเวลา</p>
-                              )}
-                            </div>
-                          </div>
-                          <div className="text-right flex-shrink-0 ml-4">
-                            <p className="text-lg font-bold text-gray-800">฿{Number(pay.amount || 0).toLocaleString()}</p>
-                            <p className="text-[10px] text-gray-400">ID: {pay.id}</p>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })
-                ) : (
-                  <div className="px-4 py-3 text-sm text-gray-400">
-                    ไม่พบรายการชำระสำหรับบิลนี้
-                  </div>
-                )}
-              </div>
-
-              {/* Summary */}
-              {bill.billPayments.length > 0 && (
-                <div className="px-4 py-2.5 bg-gray-50 border-t border-gray-100 flex justify-between items-center">
-                  <span className="text-xs text-gray-500">ชำระทั้งหมด {bill.billPayments.length} ครั้ง</span>
-                  <span className="text-sm font-bold text-gray-700">
-                    รวม ฿{bill.billPayments.reduce((s: number, p: any) => s + Number(p.amount || 0), 0).toLocaleString()}
-                  </span>
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ============ Water Record Page (บันทึกค่าน้ำ) ============
-// ข้อมูลเลขมิเตอร์น้ำ เดือนกุมภาพันธ์ 2569 (สามารถแก้ไขได้ในโปรแกรม)
-const MOCK_RESIDENTS = [
-  { id: '1', name: 'บ้านพักนักการ', type: 'house', prevWater: 162755, prevElec: 0 },
-  { id: '2', name: 'นางสาวพิมพ์ใจ สมศรี', type: 'house', prevWater: 2175, prevElec: 2156 },
-  { id: '3', name: 'นางบุษบา อริยะคำ', type: 'house', prevWater: 1999, prevElec: 1982 },
-  { id: '4', name: 'นายรณชัย วรรณรัตน์', type: 'house', prevWater: 1149, prevElec: 1116 },
-  { id: '5', name: 'นางสาวปิโยรส ใจเอื้อ,นางสาวชุลีมาศ คำบุญเรือง', type: 'house', prevWater: 1552, prevElec: 1549 },
-  { id: '6', name: 'บ้านพักครูจีน', type: 'house', prevWater: 899, prevElec: 695 },
-  { id: '7', name: 'นางสาวรัตนา สบายจิตร', type: 'house', prevWater: 1837, prevElec: 1825 },
-  { id: '8', name: 'นายเจษฏาวัชส์ เสียงเย็น,นายอดิสรณ์ ปินตามูล', type: 'house', prevWater: 1696, prevElec: 1682 },
-  { id: '9', name: 'นายพงศธร โพธิแก้ว', type: 'house', prevWater: 1834, prevElec: 1808 },
-  { id: '10', name: 'นางจีรพา กันทา', type: 'house', prevWater: 2450, prevElec: 2409 },
-  { id: '11', name: 'น.ส.ลัดดาวัลย์ บุญคุ้ม', type: 'house', prevWater: 1716, prevElec: 1700 },
-  { id: '12', name: 'น.ส.ญาณกร ศรีชาติ', type: 'house', prevWater: 1418, prevElec: 1405 },
-  { id: '13', name: 'นางดารากร จางคพิเชียร', type: 'house', prevWater: 1909, prevElec: 1881 },
-  { id: '14', name: 'นางสาวเจนจิรา จันทร์หล้า', type: 'house', prevWater: 2270, prevElec: 2249 },
-  { id: '15', name: 'น.ส.กานท์ชญา อ่อนนวล', type: 'house', prevWater: 3214, prevElec: 3192 },
-  { id: '16', name: 'นางดวงจันทร์ หลายแห่ง', type: 'house', prevWater: 1179, prevElec: 1164 },
-  { id: '17', name: 'นายเฉลิมพล ปามา,นายกัญจน์ณัฏฐ์ โลกคำลือ', type: 'house', prevWater: 1835, prevElec: 1826 },
-  { id: 'F1', name: 'นายณัฐพงศ์ คำเป็ง', type: 'flat', prevWater: 756, prevElec: 753 },
-  { id: 'F2', name: 'น.ส.กันยา กันทะ', type: 'flat', prevWater: 1590, prevElec: 0 },
-  { id: 'F3', name: 'น.ส.ขวัญดาว วงษ์พันธ์,น.ส.อรอนงค์ ยามเลย', type: 'flat', prevWater: 1501, prevElec: 0 },
-  { id: 'F4', name: 'แฟลตครูญี่ปุ่น', type: 'flat', prevWater: 749, prevElec: 0 },
-  { id: 'F5', name: 'นายสุมงคล จ่อยพิรัตน์', type: 'flat', prevWater: 1656, prevElec: 0 },
-  { id: 'F6', name: 'นายทรงศักดิ์ แก้ววิลัย', type: 'flat', prevWater: 46, prevElec: 0 },
-  { id: 'F7', name: 'นายพงศกร หงษ์ระนัย', type: 'flat', prevWater: 1255, prevElec: 0 },
-  { id: 'F8', name: 'นายพงศกร วังศิลา,นายอภินันท์ ผ่องกมล', type: 'flat', prevWater: 1029, prevElec: 0 },
-  { id: 'F9', name: 'น.ส.สุกันญา ตามสมัย,น.ส.กัญนิกา สีเสน', type: 'flat', prevWater: 50, prevElec: 0 },
-  { id: 'F10', name: 'น.ส.ดารากรณ์ นาคสุกเอี่ยม', type: 'flat', prevWater: 57, prevElec: 0 },
-  { id: 'F11', name: 'นางสาวกนกพร ภู่ปรางทอง', type: 'flat', prevWater: 917, prevElec: 0 },
-  { id: 'F12', name: 'นายราชนุชา อินจันทร์', type: 'flat', prevWater: 31, prevElec: 0 },
-  { id: 'F13', name: 'น.ส.จริญญา ศิลธรรม,น.ส.ปาริฉัตร์ คันธิสา', type: 'flat', prevWater: 1728, prevElec: 0 },
-  { id: 'F14', name: 'นายจิรพันธ์ จันจินะ,นายอุดม พลทองมาก', type: 'flat', prevWater: 1294, prevElec: 0 },
-  { id: 'F15', name: 'นางสาวรุจิรา กาจินา', type: 'flat', prevWater: 1349, prevElec: 0 },
-  { id: 'F16', name: 'นายจรูญพงษ์ ชลสินธุ์', type: 'flat', prevWater: 36, prevElec: 0 },
-];
-
-function WaterRecordPage() {
-  const [readings, setReadings] = useState<Record<string, string>>({});
-  const [waterRate, setWaterRate] = useState(18);
-  const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
-  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
-  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear() + 543);
-  const [exporting, setExporting] = useState(false);
-  const [editMode, setEditMode] = useState(false);
-  const [prevReadings, setPrevReadings] = useState<Record<string, number>>({});
-
-  const thaiMonths = ['มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน', 
-                      'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'];
-  const years = Array.from({ length: 5 }, (_, i) => new Date().getFullYear() + 543 - i);
-
-  useEffect(() => {
-    (async () => {
-      try {
-        const res = await callGasApi('admin/settings');
-        if (res.success && res.data?.waterUnitPrice) setWaterRate(Number(res.data.waterUnitPrice));
-      } catch { /* use default */ }
-    })();
-    // Initialize prevReadings from MOCK_RESIDENTS
-    const initial: Record<string, number> = {};
-    MOCK_RESIDENTS.forEach(r => { initial[r.id] = r.prevWater; });
-    setPrevReadings(initial);
-  }, []);
-
-  const houses = MOCK_RESIDENTS.filter(r => r.type === 'house');
-  const flats = MOCK_RESIDENTS.filter(r => r.type === 'flat');
-
-  const getPrevReading = (id: string) => prevReadings[id] ?? MOCK_RESIDENTS.find(r => r.id === id)?.prevWater ?? 0;
-
-  const getUsage = (id: string) => {
-    const prev = getPrevReading(id);
-    const current = parseInt(readings[id] || '');
-    if (isNaN(current) || current < prev) return { units: 0, cost: 0, valid: false };
-    const units = current - prev;
-    return { units, cost: units * waterRate, valid: true };
-  };
-
-  const handleSave = async () => {
-    setSaving(true);
-    await new Promise(r => setTimeout(r, 500));
-    setSaved(true);
-    setSaving(false);
-    setTimeout(() => setSaved(false), 3000);
-  };
-
-  const handleExport = async () => {
-    setExporting(true);
-    // TODO: API call to export to Google Sheets
-    await new Promise(r => setTimeout(r, 1000));
-    alert(`กำลังส่งออกข้อมูลค่าน้ำ ${thaiMonths[selectedMonth - 1]} ${selectedYear} ไปยัง Google Sheets`);
-    setExporting(false);
-  };
-
-  const renderTable = (title: string, residents: typeof MOCK_RESIDENTS) => {
-    const totalUnits = residents.reduce((s, r) => s + getUsage(r.id).units, 0);
-    const totalCost = residents.reduce((s, r) => s + getUsage(r.id).cost, 0);
-
-    return (
-      <div className="mb-6">
-        <h3 className="text-base font-bold text-gray-800 mb-3">{title}</h3>
-        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm border-collapse">
-              <thead>
-                <tr className="bg-gradient-to-r from-blue-50 to-cyan-50 border-b-2 border-blue-200">
-                  <th className="text-center px-2 py-3 font-bold text-gray-700 border-r border-gray-200 w-14">เลขที่</th>
-                  <th className="text-left px-2 py-3 font-bold text-gray-700 border-r border-gray-200 w-48">ชื่อผู้พักอาศัย</th>
-                  <th className="text-center px-2 py-3 font-bold text-gray-700 border-r border-gray-200 w-28">เลขมิเตอร์ก่อนหน้า</th>
-                  <th className="text-center px-2 py-3 font-bold text-gray-700 border-r border-gray-200 w-28">เลขมิเตอร์ล่าสุด</th>
-                  <th className="text-center px-2 py-3 font-bold text-gray-700 border-r border-gray-200 w-20">หน่วย</th>
-                  <th className="text-right px-3 py-3 font-bold text-gray-700 w-28">รวมค่าน้ำ</th>
-                </tr>
-              </thead>
-              <tbody>
-                {residents.map((r, idx) => {
-                  const usage = getUsage(r.id);
-                  const prevVal = getPrevReading(r.id);
-                  return (
-                    <tr key={r.id} className={`border-b border-gray-100 ${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'} hover:bg-blue-50/30 transition`}>
-                      <td className="text-center px-2 py-2.5 font-mono text-gray-600 border-r border-gray-100">{r.id}</td>
-                      <td className="px-2 py-2.5 text-gray-800 border-r border-gray-100 max-w-[192px] truncate" title={r.name}>{r.name}</td>
-                      <td className="text-center px-1 py-1.5 border-r border-gray-100">
-                        {editMode ? (
-                          <input
-                            type="text"
-                            inputMode="numeric"
-                            pattern="[0-9]*"
-                            value={prevVal}
-                            onChange={e => {
-                              const v = e.target.value.replace(/[^0-9]/g, '');
-                              setPrevReadings(prev => ({ ...prev, [r.id]: parseInt(v) || 0 }));
-                            }}
-                            className="w-full px-2 py-1.5 text-center font-mono border border-orange-400 rounded bg-orange-50 focus:outline-none focus:ring-2 focus:ring-orange-500"
-                          />
-                        ) : (
-                          <span className="font-mono text-gray-600">{prevVal}</span>
-                        )}
-                      </td>
-                      <td className="text-center px-1 py-1.5 border-r border-gray-100">
-                        <input
-                          type="text"
-                          inputMode="numeric"
-                          pattern="[0-9]*"
-                          value={readings[r.id] || ''}
-                          onChange={e => {
-                            const v = e.target.value.replace(/[^0-9]/g, '');
-                            setReadings(prev => ({ ...prev, [r.id]: v }));
-                          }}
-                          className="w-full px-2 py-1.5 text-center font-mono border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
-                          placeholder="กรอก"
-                        />
-                      </td>
-                      <td className="text-center px-2 py-2.5 font-mono font-medium text-gray-700 border-r border-gray-100">
-                        {usage.valid ? usage.units : '—'}
-                      </td>
-                      <td className="text-right px-3 py-2.5 font-bold text-blue-600">
-                        {usage.valid ? `฿${usage.cost.toLocaleString()}` : '—'}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-              <tfoot>
-                <tr className="bg-gradient-to-r from-blue-100 to-cyan-100 border-t-2 border-blue-300 font-bold">
-                  <td colSpan={4} className="text-right px-3 py-3 text-gray-800">รวม</td>
-                  <td className="text-center px-2 py-3 font-mono text-lg text-gray-800 border-r border-blue-200">{totalUnits}</td>
-                  <td className="text-right px-4 py-3 text-lg text-blue-700">฿{totalCost.toLocaleString()}</td>
-                </tr>
-              </tfoot>
-            </table>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  const allUnits = [...houses, ...flats].reduce((s, r) => s + getUsage(r.id).units, 0);
-  const allCost = [...houses, ...flats].reduce((s, r) => s + getUsage(r.id).cost, 0);
-  const houseUnits = houses.reduce((s, r) => s + getUsage(r.id).units, 0);
-  const houseCost = houses.reduce((s, r) => s + getUsage(r.id).cost, 0);
-  const flatUnits = flats.reduce((s, r) => s + getUsage(r.id).units, 0);
-  const flatCost = flats.reduce((s, r) => s + getUsage(r.id).cost, 0);
-
-  return (
-    <div className="space-y-5">
-      <div className="flex items-start justify-between gap-4">
-        <div className="flex-1">
-          <h2 className="text-xl font-bold text-gray-800">💧 บันทึกค่าน้ำ</h2>
-          <p className="text-xs text-gray-500 mt-1">อัตราค่าน้ำ: <span className="font-bold text-blue-600">฿{waterRate}/หน่วย</span></p>
-          
-          {/* Month/Year Selector */}
-          <div className="flex items-center gap-2 mt-3">
-            <span className="text-xs text-gray-500">เลือกดูข้อมูล:</span>
-            <select 
-              value={selectedMonth} 
-              onChange={e => setSelectedMonth(Number(e.target.value))}
-              className="px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
-            >
-              {thaiMonths.map((m, i) => <option key={i} value={i + 1}>{m}</option>)}
-            </select>
-            <select 
-              value={selectedYear} 
-              onChange={e => setSelectedYear(Number(e.target.value))}
-              className="px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
-            >
-              {years.map(y => <option key={y} value={y}>{y}</option>)}
-            </select>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-3">
-          <div className="text-right">
-            <div className="text-xs text-gray-500">ยอดรวมทั้งหมด</div>
-            <div className="text-2xl font-bold text-blue-600">฿{allCost.toLocaleString()}</div>
-            <div className="text-[10px] text-gray-400">{allUnits} หน่วย</div>
-          </div>
-          <div className="flex flex-col gap-2">
-            <button
-              onClick={() => setEditMode(!editMode)}
-              className={`px-4 py-2 text-xs font-medium rounded-lg transition shadow-sm ${
-                editMode ? 'bg-orange-500 text-white hover:bg-orange-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-              }`}
-            >
-              {editMode ? '🔒 ปิดแก้ไข' : '✏️ แก้ไขมิเตอร์เก่า'}
-            </button>
-            <button
-              onClick={handleSave}
-              disabled={saving}
-              className="px-5 py-2 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition shadow-sm disabled:opacity-50"
-            >
-              {saving ? '⏳ กำลังบันทึก...' : saved ? '✅ บันทึกแล้ว' : '💾 บันทึก'}
-            </button>
-            <button
-              onClick={handleExport}
-              disabled={exporting}
-              className="px-5 py-2 text-sm font-medium bg-green-600 text-white rounded-lg hover:bg-green-700 transition shadow-sm disabled:opacity-50"
-            >
-              {exporting ? '⏳ กำลังส่งออก...' : '📊 รายงาน'}
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {editMode && (
-        <div className="bg-orange-50 border-l-4 border-orange-500 p-3 rounded">
-          <p className="text-sm text-orange-800">
-            <strong>⚠️ โหมดแก้ไข:</strong> คุณสามารถแก้ไขเลขมิเตอร์ก่อนหน้าได้ในคอลัมน์ที่ 3 (พื้นหลังสีส้ม)
-          </p>
-        </div>
-      )}
-
-      {renderTable('🏠 บ้านพักครู', houses)}
-      {renderTable('🏢 แฟลต', flats)}
-
-      {/* Grand Total Summary */}
-      <div className="bg-gradient-to-r from-blue-600 to-cyan-600 rounded-xl p-5 text-white shadow-lg">
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="text-lg font-bold">📊 สรุปยอดรวมทั้งหมด</h3>
-          <div className="text-xs opacity-90">{thaiMonths[selectedMonth - 1]} {selectedYear}</div>
-        </div>
-        <div className="grid grid-cols-3 gap-4">
-          <div className="bg-white/10 rounded-lg p-3">
-            <div className="text-xs opacity-90 mb-1">บ้านพักครู</div>
-            <div className="text-xl font-bold">฿{houseCost.toLocaleString()}</div>
-            <div className="text-[10px] opacity-75">{houseUnits} หน่วย</div>
-          </div>
-          <div className="bg-white/10 rounded-lg p-3">
-            <div className="text-xs opacity-90 mb-1">แฟลต</div>
-            <div className="text-xl font-bold">฿{flatCost.toLocaleString()}</div>
-            <div className="text-[10px] opacity-75">{flatUnits} หน่วย</div>
-          </div>
-          <div className="bg-white/20 rounded-lg p-3 border-2 border-white/30">
-            <div className="text-xs opacity-90 mb-1">รวมทั้งหมด</div>
-            <div className="text-2xl font-bold">฿{allCost.toLocaleString()}</div>
-            <div className="text-[10px] opacity-75">{allUnits} หน่วย</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 // ============ Electricity Record Page (บันทึกค่าไฟ) ============
 function ElectricityRecordPage() {
-  const [readings, setReadings] = useState<Record<string, string>>({});
-  const [elecRate, setElecRate] = useState(7.5);
+  const [amounts, setAmounts] = useState<Record<string, string>>({});
   const [peaTotal, setPeaTotal] = useState('');
+  const [lossHouse, setLossHouse] = useState('');
+  const [lossFlat, setLossFlat] = useState('');
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
@@ -1111,49 +641,87 @@ function ElectricityRecordPage() {
                       'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'];
   const years = Array.from({ length: 5 }, (_, i) => new Date().getFullYear() + 543 - i);
 
-  useEffect(() => {
-    (async () => {
-      try {
-        const res = await callGasApi('admin/settings');
-        if (res.success && res.data?.electricUnitPrice) setElecRate(Number(res.data.electricUnitPrice));
-      } catch { /* use default */ }
-    })();
-  }, []);
-
   const houses = MOCK_RESIDENTS.filter(r => r.type === 'house');
   const flats = MOCK_RESIDENTS.filter(r => r.type === 'flat');
 
-  const getCost = (id: string) => {
-    const val = parseFloat(readings[id] || '');
-    if (isNaN(val)) return { units: 0, raw: 0, rounded: 0, valid: false };
-    const units = Math.ceil(val);
-    const raw = units * elecRate;
-    const rounded = Math.ceil(raw);
-    return { units, raw, rounded, valid: true };
+  // ปัดเศษขึ้นเป็นจำนวนเต็มเสมอ
+  const getRoundedAmount = (id: string): number => {
+    const val = parseFloat(amounts[id] || '');
+    if (isNaN(val) || val <= 0) return 0;
+    return Math.ceil(val);
   };
 
-  const totalCollected = [...houses, ...flats].reduce((s, r) => s + getCost(r.id).rounded, 0);
+  const getRoundedLossHouse = Math.ceil(parseFloat(lossHouse) || 0);
+  const getRoundedLossFlat = Math.ceil(parseFloat(lossFlat) || 0);
   const peaTotalNum = parseFloat(peaTotal) || 0;
-  const difference = totalCollected - peaTotalNum;
+
+  const houseTotalCollected = houses.reduce((s, r) => s + getRoundedAmount(r.id), 0);
+  const flatTotalCollected = flats.reduce((s, r) => s + getRoundedAmount(r.id), 0);
+  const totalCollected = houseTotalCollected + flatTotalCollected + getRoundedLossHouse + getRoundedLossFlat;
+  const roundingDifference = totalCollected - peaTotalNum;
+
+  const handleAmountChange = (id: string, value: string) => {
+    // อนุญาตให้กรอกตัวเลขและจุดทศนิยม แต่แสดงปัดเศษขึ้นในตาราง
+    const v = value.replace(/[^0-9.]/g, '');
+    setAmounts(prev => ({ ...prev, [id]: v }));
+  };
 
   const handleSave = async () => {
     setSaving(true);
-    await new Promise(r => setTimeout(r, 500));
-    setSaved(true);
+    try {
+      // บันทึกข้อมูลค่าไฟ
+      await callGasApi('electricity/save', {
+        method: 'POST',
+        data: {
+          month: selectedMonth,
+          year: selectedYear,
+          peaTotal: peaTotalNum,
+          lossHouse: getRoundedLossHouse,
+          lossFlat: getRoundedLossFlat,
+          amounts: Object.fromEntries(
+            Object.entries(amounts).map(([id, val]) => [id, Math.ceil(parseFloat(val) || 0)])
+          ),
+          totalCollected,
+          roundingDifference,
+        },
+      });
+
+      // บันทึกส่วนต่างจากการปัดเศษเป็นรายรับอัตโนมัติ
+      if (roundingDifference !== 0) {
+        await callGasApi('expenses', {
+          method: 'POST',
+          data: {
+            description: `ส่วนต่างจากการปัดเศษค่าไฟ ${thaiMonths[selectedMonth - 1]} ${selectedYear}`,
+            amount: roundingDifference,
+            category: 'รายรับ-ส่วนต่างปัดเศษ',
+            date: new Date().toISOString().split('T')[0],
+            type: 'income',
+          },
+        });
+      }
+
+      setSaved(true);
+      setTimeout(() => setSaved(false), 3000);
+    } catch { /* ignore */ }
     setSaving(false);
-    setTimeout(() => setSaved(false), 3000);
   };
 
   const handleExport = async () => {
     setExporting(true);
-    await new Promise(r => setTimeout(r, 1000));
-    alert(`กำลังส่งออกข้อมูลค่าไฟ ${thaiMonths[selectedMonth - 1]} ${selectedYear} ไปยัง Google Sheets`);
+    try {
+      await callGasApi('electricity/export', {
+        method: 'POST',
+        data: { month: selectedMonth, year: selectedYear },
+      });
+      alert(`ส่งออกข้อมูลค่าไฟ ${thaiMonths[selectedMonth - 1]} ${selectedYear} เรียบร้อย`);
+    } catch {
+      alert('ไม่สามารถส่งออกข้อมูลได้');
+    }
     setExporting(false);
   };
 
   const renderTable = (title: string, residents: typeof MOCK_RESIDENTS) => {
-    const totalUnits = residents.reduce((s, r) => s + getCost(r.id).units, 0);
-    const totalCost = residents.reduce((s, r) => s + getCost(r.id).rounded, 0);
+    const totalCost = residents.reduce((s, r) => s + getRoundedAmount(r.id), 0);
 
     return (
       <div className="mb-6">
@@ -1165,14 +733,15 @@ function ElectricityRecordPage() {
                 <tr className="bg-gradient-to-r from-yellow-50 to-orange-50 border-b-2 border-yellow-200">
                   <th className="text-center px-2 py-3 font-bold text-gray-700 border-r border-gray-200 w-14">เลขที่</th>
                   <th className="text-left px-2 py-3 font-bold text-gray-700 border-r border-gray-200 w-48">ชื่อผู้พักอาศัย</th>
-                  <th className="text-center px-2 py-3 font-bold text-gray-700 border-r border-gray-200 w-28">มิเตอร์ล่าสุด</th>
-                  <th className="text-center px-2 py-3 font-bold text-gray-700 border-r border-gray-200 w-20">หน่วย</th>
-                  <th className="text-right px-3 py-3 font-bold text-gray-700 w-28">ค่าไฟ (฿)</th>
+                  <th className="text-center px-2 py-3 font-bold text-gray-700 border-r border-gray-200 w-36">จำนวนเงิน (บาท)</th>
+                  <th className="text-right px-3 py-3 font-bold text-gray-700 w-28">ปัดเศษขึ้น (฿)</th>
                 </tr>
               </thead>
               <tbody>
                 {residents.map((r, idx) => {
-                  const cost = getCost(r.id);
+                  const rounded = getRoundedAmount(r.id);
+                  const rawVal = parseFloat(amounts[r.id] || '');
+                  const hasDecimal = !isNaN(rawVal) && rawVal > 0 && rawVal !== Math.ceil(rawVal);
                   return (
                     <tr key={r.id} className={`border-b border-gray-100 ${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'} hover:bg-yellow-50/30 transition`}>
                       <td className="text-center px-2 py-2.5 font-mono text-gray-600 border-r border-gray-100">{r.id}</td>
@@ -1180,22 +749,20 @@ function ElectricityRecordPage() {
                       <td className="text-center px-1 py-1.5 border-r border-gray-100">
                         <input
                           type="text"
-                          inputMode="numeric"
-                          pattern="[0-9]*"
-                          value={readings[r.id] || ''}
-                          onChange={e => {
-                            const v = e.target.value.replace(/[^0-9]/g, '');
-                            setReadings(prev => ({ ...prev, [r.id]: v }));
-                          }}
+                          inputMode="decimal"
+                          value={amounts[r.id] || ''}
+                          onChange={e => handleAmountChange(r.id, e.target.value)}
                           className="w-full px-2 py-1.5 text-center font-mono border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent"
-                          placeholder="หน่วย"
+                          placeholder="0"
                         />
                       </td>
-                      <td className="text-center px-2 py-2.5 font-mono font-medium text-gray-700 border-r border-gray-100">
-                        {cost.valid ? cost.units : '—'}
-                      </td>
                       <td className="text-right px-3 py-2.5 font-bold text-yellow-600">
-                        {cost.valid ? `฿${cost.rounded.toLocaleString()}` : '—'}
+                        {rounded > 0 ? (
+                          <span>
+                            ฿{rounded.toLocaleString()}
+                            {hasDecimal && <span className="text-[10px] text-orange-400 ml-1">↑</span>}
+                          </span>
+                        ) : '—'}
                       </td>
                     </tr>
                   );
@@ -1203,8 +770,8 @@ function ElectricityRecordPage() {
               </tbody>
               <tfoot>
                 <tr className="bg-gradient-to-r from-yellow-100 to-orange-100 border-t-2 border-yellow-300 font-bold">
-                  <td colSpan={3} className="text-right px-3 py-3 text-gray-800">รวม</td>
-                  <td className="text-center px-2 py-3 font-mono text-lg text-gray-800 border-r border-yellow-200">{totalUnits}</td>
+                  <td colSpan={2} className="text-right px-3 py-3 text-gray-800">รวม</td>
+                  <td className="text-center px-2 py-3 font-mono text-gray-500 border-r border-yellow-200">—</td>
                   <td className="text-right px-4 py-3 text-lg text-yellow-700">฿{totalCost.toLocaleString()}</td>
                 </tr>
               </tfoot>
@@ -1215,22 +782,17 @@ function ElectricityRecordPage() {
     );
   };
 
-  const allUnits = [...houses, ...flats].reduce((s, r) => s + getCost(r.id).units, 0);
-  const houseUnits = houses.reduce((s, r) => s + getCost(r.id).units, 0);
-  const houseCost = houses.reduce((s, r) => s + getCost(r.id).rounded, 0);
-  const flatUnits = flats.reduce((s, r) => s + getCost(r.id).units, 0);
-  const flatCost = flats.reduce((s, r) => s + getCost(r.id).rounded, 0);
-
   return (
     <div className="space-y-5">
+      {/* Header */}
       <div className="flex items-start justify-between gap-4">
         <div className="flex-1">
           <h2 className="text-xl font-bold text-gray-800">⚡ บันทึกค่าไฟ</h2>
-          <p className="text-xs text-gray-500 mt-1">อัตราค่าไฟ: <span className="font-bold text-yellow-600">฿{elecRate}/หน่วย</span></p>
+          <p className="text-xs text-gray-500 mt-1">กรอกจำนวนเงินค่าไฟรายหลัง (ระบบจะปัดเศษขึ้นเป็นจำนวนเต็มอัตโนมัติ)</p>
           
           {/* Month/Year Selector */}
           <div className="flex items-center gap-2 mt-3">
-            <span className="text-xs text-gray-500">เลือกดูข้อมูล:</span>
+            <span className="text-xs text-gray-500">เลือกเดือน:</span>
             <select 
               value={selectedMonth} 
               onChange={e => setSelectedMonth(Number(e.target.value))}
@@ -1248,101 +810,147 @@ function ElectricityRecordPage() {
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
-          <div className="text-right">
-            <div className="text-xs text-gray-500">ยอดเรียกเก็บ</div>
-            <div className="text-2xl font-bold text-yellow-600">฿{totalCollected.toLocaleString()}</div>
-            <div className="text-[10px] text-gray-400">{allUnits} หน่วย</div>
+        <div className="flex flex-col gap-2">
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            className="px-5 py-2 text-sm font-medium bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition shadow-sm disabled:opacity-50"
+          >
+            {saving ? '⏳ กำลังบันทึก...' : saved ? '✅ บันทึกแล้ว' : '💾 บันทึก'}
+          </button>
+          <button
+            onClick={handleExport}
+            disabled={exporting}
+            className="px-5 py-2 text-sm font-medium bg-green-600 text-white rounded-lg hover:bg-green-700 transition shadow-sm disabled:opacity-50"
+          >
+            {exporting ? '⏳ กำลังส่งออก...' : '📊 รายงาน'}
+          </button>
+        </div>
+      </div>
+
+      {/* ค่าไฟรวมจาก PEA + Loss */}
+      <div className="bg-white rounded-xl border-2 border-blue-200 p-5 shadow-sm">
+        <h3 className="text-base font-bold text-gray-800 mb-4">💡 ยอดค่าไฟจากการไฟฟ้า (PEA) และ Loss</h3>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div>
+            <label className="block text-xs text-gray-500 mb-2">ค่าไฟรวมที่เรียกเก็บจาก PEA (บาท)</label>
+            <input
+              type="text"
+              inputMode="decimal"
+              value={peaTotal}
+              onChange={e => setPeaTotal(e.target.value.replace(/[^0-9.]/g, ''))}
+              className="w-full px-4 py-3 text-lg font-mono border-2 border-blue-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-blue-50"
+              placeholder="0.00"
+            />
+            {peaTotalNum > 0 && (
+              <p className="text-[10px] text-blue-500 mt-1">฿{peaTotalNum.toLocaleString('th-TH', { minimumFractionDigits: 2 })}</p>
+            )}
           </div>
-          <div className="flex flex-col gap-2">
-            <button
-              onClick={handleSave}
-              disabled={saving}
-              className="px-5 py-2 text-sm font-medium bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition shadow-sm disabled:opacity-50"
-            >
-              {saving ? '⏳ กำลังบันทึก...' : saved ? '✅ บันทึกแล้ว' : '💾 บันทึก'}
-            </button>
-            <button
-              onClick={handleExport}
-              disabled={exporting}
-              className="px-5 py-2 text-sm font-medium bg-green-600 text-white rounded-lg hover:bg-green-700 transition shadow-sm disabled:opacity-50"
-            >
-              {exporting ? '⏳ กำลังส่งออก...' : '📊 รายงาน'}
-            </button>
+          <div>
+            <label className="block text-xs text-gray-500 mb-2">Loss บ้านพักครู (บาท)</label>
+            <input
+              type="text"
+              inputMode="decimal"
+              value={lossHouse}
+              onChange={e => setLossHouse(e.target.value.replace(/[^0-9.]/g, ''))}
+              className="w-full px-4 py-3 text-lg font-mono border-2 border-orange-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent bg-orange-50"
+              placeholder="0"
+            />
+            {getRoundedLossHouse > 0 && parseFloat(lossHouse) !== getRoundedLossHouse && (
+              <p className="text-[10px] text-orange-500 mt-1">ปัดขึ้นเป็น ฿{getRoundedLossHouse.toLocaleString()}</p>
+            )}
+          </div>
+          <div>
+            <label className="block text-xs text-gray-500 mb-2">Loss แฟลต (บาท)</label>
+            <input
+              type="text"
+              inputMode="decimal"
+              value={lossFlat}
+              onChange={e => setLossFlat(e.target.value.replace(/[^0-9.]/g, ''))}
+              className="w-full px-4 py-3 text-lg font-mono border-2 border-orange-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent bg-orange-50"
+              placeholder="0"
+            />
+            {getRoundedLossFlat > 0 && parseFloat(lossFlat) !== getRoundedLossFlat && (
+              <p className="text-[10px] text-orange-500 mt-1">ปัดขึ้นเป็น ฿{getRoundedLossFlat.toLocaleString()}</p>
+            )}
           </div>
         </div>
       </div>
 
+      {/* ตารางบ้านพักครู */}
       {renderTable('🏠 บ้านพักครู', houses)}
+
+      {/* ตารางแฟลต */}
       {renderTable('🏢 แฟลต', flats)}
 
-      {/* Grand Total Summary */}
+      {/* สรุปยอดรวม */}
       <div className="bg-gradient-to-r from-yellow-600 to-orange-600 rounded-xl p-5 text-white shadow-lg">
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-lg font-bold">📊 สรุปยอดรวมทั้งหมด</h3>
           <div className="text-xs opacity-90">{thaiMonths[selectedMonth - 1]} {selectedYear}</div>
         </div>
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
           <div className="bg-white/10 rounded-lg p-3">
             <div className="text-xs opacity-90 mb-1">บ้านพักครู</div>
-            <div className="text-xl font-bold">฿{houseCost.toLocaleString()}</div>
-            <div className="text-[10px] opacity-75">{houseUnits} หน่วย</div>
+            <div className="text-xl font-bold">฿{houseTotalCollected.toLocaleString()}</div>
           </div>
           <div className="bg-white/10 rounded-lg p-3">
             <div className="text-xs opacity-90 mb-1">แฟลต</div>
-            <div className="text-xl font-bold">฿{flatCost.toLocaleString()}</div>
-            <div className="text-[10px] opacity-75">{flatUnits} หน่วย</div>
+            <div className="text-xl font-bold">฿{flatTotalCollected.toLocaleString()}</div>
+          </div>
+          <div className="bg-white/10 rounded-lg p-3">
+            <div className="text-xs opacity-90 mb-1">Loss (บ้าน + แฟลต)</div>
+            <div className="text-xl font-bold">฿{(getRoundedLossHouse + getRoundedLossFlat).toLocaleString()}</div>
+            <div className="text-[10px] opacity-75">บ้าน ฿{getRoundedLossHouse.toLocaleString()} | แฟลต ฿{getRoundedLossFlat.toLocaleString()}</div>
           </div>
           <div className="bg-white/20 rounded-lg p-3 border-2 border-white/30">
-            <div className="text-xs opacity-90 mb-1">รวมทั้งหมด</div>
+            <div className="text-xs opacity-90 mb-1">เรียกเก็บรวมทั้งหมด</div>
             <div className="text-2xl font-bold">฿{totalCollected.toLocaleString()}</div>
-            <div className="text-[10px] opacity-75">{allUnits} หน่วย</div>
           </div>
         </div>
       </div>
 
-      {/* PEA Total & Difference */}
-      <div className="bg-white rounded-xl border-2 border-blue-200 p-5 shadow-sm">
-        <h3 className="text-base font-bold text-gray-800 mb-4">💡 ยอดค่าไฟจากการไฟฟ้า (PEA)</h3>
-        <div className="flex items-end gap-4">
-          <div className="flex-1 max-w-xs">
-            <label className="block text-xs text-gray-500 mb-2">กรอกยอดค่าไฟจากบิล PEA</label>
-            <input
-              type="text"
-              inputMode="decimal"
-              value={peaTotal}
-              onChange={e => {
-                const v = e.target.value.replace(/[^0-9.]/g, '');
-                setPeaTotal(v);
-              }}
-              className="w-full px-4 py-3 text-xl font-mono border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="0.00"
-            />
-          </div>
-          
-          {peaTotal && (
-            <div className="flex-1 p-4 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-lg border border-blue-200">
-              <div className="space-y-2">
-                <div className="flex justify-between text-sm text-gray-600">
-                  <span>ยอดเรียกเก็บ (ปัดเศษขึ้น)</span>
-                  <span className="font-bold">฿{totalCollected.toLocaleString()}</span>
-                </div>
-                <div className="flex justify-between text-sm text-gray-600">
-                  <span>ยอด PEA</span>
-                  <span className="font-bold">฿{peaTotalNum.toLocaleString()}</span>
-                </div>
-                <div className="border-t border-blue-200 pt-2 flex justify-between items-center">
-                  <span className="font-bold text-gray-800">ส่วนต่าง</span>
-                  <span className={`text-2xl font-bold ${difference >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                    {difference >= 0 ? '+' : ''}฿{difference.toLocaleString()}
-                  </span>
-                </div>
-              </div>
+      {/* ส่วนต่างจากการปัดเศษ */}
+      {peaTotalNum > 0 && (
+        <div className={`rounded-xl border-2 p-5 shadow-sm ${roundingDifference >= 0 ? 'bg-green-50 border-green-300' : 'bg-red-50 border-red-300'}`}>
+          <h3 className="text-base font-bold text-gray-800 mb-4">🔄 ส่วนต่างจากการปัดเศษ</h3>
+          <div className="space-y-2">
+            <div className="flex justify-between text-sm">
+              <span className="text-gray-600">ยอด PEA ที่เรียกเก็บ</span>
+              <span className="font-bold font-mono">฿{peaTotalNum.toLocaleString('th-TH', { minimumFractionDigits: 2 })}</span>
             </div>
-          )}
+            <div className="flex justify-between text-sm">
+              <span className="text-gray-600">ยอดเรียกเก็บจากผู้พัก (ปัดเศษขึ้น)</span>
+              <span className="font-bold font-mono">฿{(houseTotalCollected + flatTotalCollected).toLocaleString()}</span>
+            </div>
+            <div className="flex justify-between text-sm">
+              <span className="text-gray-600">Loss รวม (บ้าน + แฟลต)</span>
+              <span className="font-bold font-mono">฿{(getRoundedLossHouse + getRoundedLossFlat).toLocaleString()}</span>
+            </div>
+            <div className="border-t-2 border-dashed pt-3 mt-2">
+              <div className="flex justify-between items-center">
+                <div>
+                  <span className="font-bold text-gray-800">ส่วนต่างจากการปัดเศษ</span>
+                  <p className="text-[10px] text-gray-500 mt-0.5">
+                    สูตร: (ยอดเรียกเก็บทุกหลัง + Loss ทั้งหมด) − ยอด PEA
+                  </p>
+                </div>
+                <span className={`text-2xl font-bold font-mono ${roundingDifference >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  {roundingDifference >= 0 ? '+' : ''}฿{roundingDifference.toLocaleString()}
+                </span>
+              </div>
+              {roundingDifference !== 0 && (
+                <div className={`mt-3 p-2.5 rounded-lg text-xs font-medium ${roundingDifference > 0 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                  {roundingDifference > 0
+                    ? `💰 ส่วนต่าง ฿${roundingDifference.toLocaleString()} จะถูกบันทึกเป็น "รายรับ" ในบัญชีรายรับรายจ่ายโดยอัตโนมัติ`
+                    : `⚠️ ยอดเรียกเก็บน้อยกว่ายอด PEA ฿${Math.abs(roundingDifference).toLocaleString()} กรุณาตรวจสอบข้อมูล`
+                  }
+                </div>
+              )}
+            </div>
+          </div>
         </div>
-        <p className="text-[10px] text-gray-400 mt-2">* ส่วนต่าง = ยอดเรียกเก็บ(ปัดขึ้น) − ยอดจากบิล PEA</p>
-      </div>
+      )}
     </div>
   );
 }
@@ -1620,4 +1228,25 @@ function LoginForm({ onLogin, isLoading }: { onLogin: (e: string, p: string) => 
       </button>
     </form>
   );
+}
+
+// ============ Payment History Page (ประวัติการชำระ) ============
+function PaymentHistoryPage() {
+  return <div>Payment History Page</div>;
+}
+
+// ============ Water Record Page ============
+function WaterRecordPage() {
+  return <div>Water Record Page</div>;
+}
+
+// ============ Mock Data ============
+const MOCK_RESIDENTS = [
+  { id: '1', type: 'house', name: 'Resident A', prevWater: 100 },
+  { id: '2', type: 'flat', name: 'Resident B', prevWater: 200 },
+];
+
+// ============ Send Slip Page ============
+function SendSlipPage() {
+  return <div>Send Slip Page</div>;
 }
