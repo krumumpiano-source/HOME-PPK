@@ -45,6 +45,7 @@ router.get('/', (req, res) => {
  */
 router.post('/', (req, res) => {
   // Prevent duplicate slip for same billId/residentId if pending/paid exists
+  const { residentId, billId, amount, imageUrl } = req.body;
   const already = payments.some(p => p.residentId === residentId && p.billId === billId && (p.status === 'pending' || p.status === 'paid' || p.status === 'approved'));
   if (already) {
     return res.status(400).json({ success: false, error: 'Slip already submitted for this bill. Please wait for approval.' });
@@ -64,8 +65,6 @@ router.post('/', (req, res) => {
   res.status(201).json({
     success: true,
     data: newPayment
-  });
-});
   });
 });
 
