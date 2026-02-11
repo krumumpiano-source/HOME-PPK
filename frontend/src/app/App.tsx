@@ -814,14 +814,39 @@ function PaymentHistoryPage({ user }: { user: any }) {
 
 // ============ Water Record Page (บันทึกค่าน้ำ) ============
 const MOCK_RESIDENTS = [
-  { id: 'H01', name: 'สมชาย ใจดี', type: 'house', prevWater: 1520, prevElec: 3200 },
-  { id: 'H02', name: 'วิไล สุขสม', type: 'house', prevWater: 980, prevElec: 2800 },
-  { id: 'H03', name: 'ประสิทธิ์ ดีงาม', type: 'house', prevWater: 1200, prevElec: 1500 },
-  { id: 'H04', name: 'ว่าง', type: 'house', prevWater: 0, prevElec: 0, vacant: true },
-  { id: 'F01', name: 'สมหญิง สุขใจ', type: 'flat', prevWater: 450, prevElec: 1100 },
-  { id: 'F02', name: 'วราภรณ์ แก้วมณี', type: 'flat', prevWater: 520, prevElec: 900 },
-  { id: 'F03', name: 'อนุชา พงษ์ศรี', type: 'flat', prevWater: 380, prevElec: 750 },
-  { id: 'F04', name: 'ว่าง', type: 'flat', prevWater: 0, prevElec: 0, vacant: true },
+  { id: '1', name: 'บ้านพักนักการ', type: 'house', prevWater: 0, prevElec: 0 },
+  { id: '2', name: 'นางสาวพิมพ์ใจ สมศรี', type: 'house', prevWater: 2146, prevElec: 2156 },
+  { id: '3', name: 'นางบุษบา อริยะคำ', type: 'house', prevWater: 1974, prevElec: 1982 },
+  { id: '4', name: 'นายรณชัย วรรณรัตน์', type: 'house', prevWater: 1105, prevElec: 1116 },
+  { id: '5', name: 'นางสาวปิโยรส ใจเอื้อ,นางสาวชุลีมาศ คำบุญเรือง', type: 'house', prevWater: 1547, prevElec: 1549 },
+  { id: '6', name: 'บ้านพักครูจีน', type: 'house', prevWater: 893, prevElec: 695 },
+  { id: '7', name: 'นางสาวรัตนา สบายจิตร', type: 'house', prevWater: 1818, prevElec: 1825 },
+  { id: '8', name: 'นายเจษฏาวัชส์ เสียงเย็น,นายอดิสรณ์ ปินตามูล', type: 'house', prevWater: 1673, prevElec: 1682 },
+  { id: '9', name: 'นายพงศธร โพธิแก้ว', type: 'house', prevWater: 1796, prevElec: 1808 },
+  { id: '10', name: 'นางจีรพา กันทา', type: 'house', prevWater: 2395, prevElec: 2409 },
+  { id: '11', name: 'น.ส.ลัดดาวัลย์ บุญคุ้ม', type: 'house', prevWater: 1692, prevElec: 1700 },
+  { id: '12', name: 'น.ส.ญาณกร ศรีชาติ', type: 'house', prevWater: 1399, prevElec: 1405 },
+  { id: '13', name: 'นางดารากร จางคพิเชียร', type: 'house', prevWater: 1862, prevElec: 1881 },
+  { id: '14', name: 'นางสาวเจนจิรา จันทร์หล้า', type: 'house', prevWater: 2239, prevElec: 2249 },
+  { id: '15', name: 'น.ส.กานท์ชญา อ่อนนวล', type: 'house', prevWater: 3179, prevElec: 3192 },
+  { id: '16', name: 'นางดวงจันทร์ หลายแห่ง', type: 'house', prevWater: 1155, prevElec: 1164 },
+  { id: '17', name: 'นายเฉลิมพล ปามา,นายกัญจน์ณัฏฐ์ โลกคำลือ', type: 'house', prevWater: 1818, prevElec: 1826 },
+  { id: 'F1', name: 'นายณัฐพงศ์ คำเป็ง', type: 'flat', prevWater: 752, prevElec: 753 },
+  { id: 'F2', name: 'น.ส.กันยา กันทะ', type: 'flat', prevWater: 0, prevElec: 0 },
+  { id: 'F3', name: 'น.ส.ขวัญดาว วงษ์พันธ์,น.ส.อรอนงค์ ยามเลย', type: 'flat', prevWater: 0, prevElec: 0 },
+  { id: 'F4', name: 'แฟลตครูญี่ปุ่น', type: 'flat', prevWater: 0, prevElec: 0 },
+  { id: 'F5', name: 'นายสุมงคล จ่อยพิรัตน์', type: 'flat', prevWater: 0, prevElec: 0 },
+  { id: 'F6', name: 'นายทรงศักดิ์ แก้ววิลัย', type: 'flat', prevWater: 0, prevElec: 0 },
+  { id: 'F7', name: 'นายพงศกร หงษ์ระนัย', type: 'flat', prevWater: 0, prevElec: 0 },
+  { id: 'F8', name: 'นายพงศกร วังศิลา,นายอภินันท์ ผ่องกมล', type: 'flat', prevWater: 0, prevElec: 0 },
+  { id: 'F9', name: 'น.ส.สุกันญา ตามสมัย,น.ส.กัญนิกา สีเสน', type: 'flat', prevWater: 0, prevElec: 0 },
+  { id: 'F10', name: 'น.ส.ดารากรณ์ นาคสุกเอี่ยม', type: 'flat', prevWater: 0, prevElec: 0 },
+  { id: 'F11', name: 'นางสาวกนกพร ภู่ปรางทอง', type: 'flat', prevWater: 0, prevElec: 0 },
+  { id: 'F12', name: 'นายราชนุชา อินจันทร์', type: 'flat', prevWater: 0, prevElec: 0 },
+  { id: 'F13', name: 'น.ส.จริญญา ศิลธรรม,น.ส.ปาริฉัตร์ คันธิสา', type: 'flat', prevWater: 0, prevElec: 0 },
+  { id: 'F14', name: 'นายจิรพันธ์ จันจินะ,นายอุดม พลทองมาก', type: 'flat', prevWater: 0, prevElec: 0 },
+  { id: 'F15', name: 'นางสาวรุจิรา กาจินา', type: 'flat', prevWater: 0, prevElec: 0 },
+  { id: 'F16', name: 'นายจรูญพงษ์ ชลสินธุ์', type: 'flat', prevWater: 0, prevElec: 0 },
 ];
 
 function WaterRecordPage() {
@@ -839,8 +864,8 @@ function WaterRecordPage() {
     })();
   }, []);
 
-  const houses = MOCK_RESIDENTS.filter(r => r.type === 'house' && !r.vacant);
-  const flats = MOCK_RESIDENTS.filter(r => r.type === 'flat' && !r.vacant);
+  const houses = MOCK_RESIDENTS.filter(r => r.type === 'house');
+  const flats = MOCK_RESIDENTS.filter(r => r.type === 'flat');
 
   const getUsage = (id: string, prev: number) => {
     const current = parseInt(readings[id] || '');
@@ -849,15 +874,7 @@ function WaterRecordPage() {
     return { units, cost: units * waterRate, valid: true };
   };
 
-  const allFilled = [...houses, ...flats].every(r => readings[r.id] && getUsage(r.id, r.prevWater).valid);
-  const totalUnits = [...houses, ...flats].reduce((s, r) => s + getUsage(r.id, r.prevWater).units, 0);
-  const totalCost = [...houses, ...flats].reduce((s, r) => s + getUsage(r.id, r.prevWater).cost, 0);
-
   const handleSave = async () => {
-    if (!allFilled) {
-      alert('กรุณากรอกมิเตอร์ให้ครบทุกหน่วย');
-      return;
-    }
     setSaving(true);
     await new Promise(r => setTimeout(r, 500));
     setSaved(true);
@@ -865,105 +882,100 @@ function WaterRecordPage() {
     setTimeout(() => setSaved(false), 3000);
   };
 
-  const ResidentRow = ({ r }: { r: typeof MOCK_RESIDENTS[0] }) => {
-    const usage = getUsage(r.id, r.prevWater);
-    const isEmpty = !readings[r.id];
-    
+  const renderTable = (title: string, residents: typeof MOCK_RESIDENTS) => {
+    const totalUnits = residents.reduce((s, r) => s + getUsage(r.id, r.prevWater).units, 0);
+    const totalCost = residents.reduce((s, r) => s + getUsage(r.id, r.prevWater).cost, 0);
+
     return (
-      <div className={`flex items-center gap-3 p-3 rounded-lg border ${isEmpty ? 'border-blue-200 bg-blue-50/30' : 'border-gray-100 bg-white'} hover:shadow-sm transition`}>
-        <div className="flex-shrink-0 w-12">
-          <div className="text-xs font-bold text-gray-500">{r.id}</div>
-        </div>
-        <div className="flex-1 min-w-0">
-          <div className="text-sm font-medium text-gray-800 truncate">{r.name}</div>
-          <div className="text-[11px] text-gray-400">เดิม: {r.prevWater}</div>
-        </div>
-        <div className="flex items-center gap-3">
-          <div className="relative">
-            <input
-              type="text"
-              inputMode="numeric"
-              pattern="[0-9]*"
-              value={readings[r.id] || ''}
-              onChange={e => {
-                const v = e.target.value.replace(/[^0-9]/g, '');
-                setReadings(prev => ({ ...prev, [r.id]: v }));
-              }}
-              className={`w-24 px-3 py-2 text-center text-base font-mono border-2 rounded-lg focus:outline-none ${
-                isEmpty ? 'border-blue-400 bg-white focus:border-blue-600' : 'border-gray-200 focus:border-blue-500'
-              }`}
-              placeholder="กรอก"
-            />
+      <div className="mb-6">
+        <h3 className="text-base font-bold text-gray-800 mb-3">{title}</h3>
+        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm border-collapse">
+              <thead>
+                <tr className="bg-gradient-to-r from-blue-50 to-cyan-50 border-b-2 border-blue-200">
+                  <th className="text-center px-3 py-3 font-bold text-gray-700 border-r border-gray-200 w-16">เลขที่</th>
+                  <th className="text-left px-3 py-3 font-bold text-gray-700 border-r border-gray-200">ชื่อผู้พักอาศัย</th>
+                  <th className="text-center px-3 py-3 font-bold text-gray-700 border-r border-gray-200 w-32">เลขมิเตอร์ก่อนหน้า</th>
+                  <th className="text-center px-3 py-3 font-bold text-gray-700 border-r border-gray-200 w-32">เลขมิเตอร์ล่าสุด</th>
+                  <th className="text-center px-3 py-3 font-bold text-gray-700 border-r border-gray-200 w-24">หน่วย</th>
+                  <th className="text-right px-3 py-3 font-bold text-gray-700 w-28">รวมค่าน้ำ</th>
+                </tr>
+              </thead>
+              <tbody>
+                {residents.map((r, idx) => {
+                  const usage = getUsage(r.id, r.prevWater);
+                  return (
+                    <tr key={r.id} className={`border-b border-gray-100 ${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'} hover:bg-blue-50/30 transition`}>
+                      <td className="text-center px-3 py-2.5 font-mono text-gray-600 border-r border-gray-100">{r.id}</td>
+                      <td className="px-3 py-2.5 text-gray-800 border-r border-gray-100">{r.name}</td>
+                      <td className="text-center px-3 py-2.5 font-mono text-gray-600 border-r border-gray-100">{r.prevWater}</td>
+                      <td className="text-center px-2 py-1.5 border-r border-gray-100">
+                        <input
+                          type="text"
+                          inputMode="numeric"
+                          pattern="[0-9]*"
+                          value={readings[r.id] || ''}
+                          onChange={e => {
+                            const v = e.target.value.replace(/[^0-9]/g, '');
+                            setReadings(prev => ({ ...prev, [r.id]: v }));
+                          }}
+                          className="w-full px-2 py-1.5 text-center font-mono border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
+                          placeholder="กรอก"
+                        />
+                      </td>
+                      <td className="text-center px-3 py-2.5 font-mono font-medium text-gray-700 border-r border-gray-100">
+                        {usage.valid ? usage.units : '—'}
+                      </td>
+                      <td className="text-right px-3 py-2.5 font-bold text-blue-600">
+                        {usage.valid ? `฿${usage.cost.toLocaleString()}` : '—'}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+              <tfoot>
+                <tr className="bg-gradient-to-r from-blue-100 to-cyan-100 border-t-2 border-blue-300 font-bold">
+                  <td colSpan={4} className="text-right px-3 py-3 text-gray-800">รวม</td>
+                  <td className="text-center px-3 py-3 font-mono text-lg text-gray-800 border-r border-blue-200">{totalUnits}</td>
+                  <td className="text-right px-3 py-3 text-lg text-blue-700">฿{totalCost.toLocaleString()}</td>
+                </tr>
+              </tfoot>
+            </table>
           </div>
-          {usage.valid ? (
-            <div className="w-24 text-right">
-              <div className="text-sm font-bold text-blue-600">฿{usage.cost.toLocaleString()}</div>
-              <div className="text-[10px] text-gray-400">{usage.units} หน่วย</div>
-            </div>
-          ) : (
-            <div className="w-24 text-right text-gray-300 text-sm">—</div>
-          )}
         </div>
       </div>
     );
   };
 
+  const allUnits = [...houses, ...flats].reduce((s, r) => s + getUsage(r.id, r.prevWater).units, 0);
+  const allCost = [...houses, ...flats].reduce((s, r) => s + getUsage(r.id, r.prevWater).cost, 0);
+
   return (
-    <div className="max-w-3xl space-y-5">
+    <div className="space-y-5">
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-xl font-bold text-gray-800">💧 บันทึกค่าน้ำ</h2>
-          <p className="text-xs text-gray-400 mt-0.5">กรอกเลขมิเตอร์ล่าสุดของแต่ละหน่วย</p>
+          <p className="text-xs text-gray-500 mt-1">อัตราค่าน้ำ: <span className="font-bold text-blue-600">฿{waterRate}/หน่วย</span></p>
         </div>
-        <button
-          onClick={handleSave}
-          disabled={saving || !allFilled}
-          className={`px-5 py-2.5 text-sm font-medium rounded-lg transition shadow-sm ${
-            allFilled ? 'bg-blue-600 text-white hover:bg-blue-700' : 'bg-gray-200 text-gray-400 cursor-not-allowed'
-          }`}
-        >
-          {saving ? '⏳ กำลังบันทึก...' : saved ? '✅ บันทึกแล้ว' : '💾 บันทึก'}
-        </button>
-      </div>
-
-      {/* Summary bar */}
-      <div className="bg-gradient-to-r from-blue-500 to-cyan-500 rounded-xl p-4 text-white shadow-lg">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center text-lg">💧</div>
-            <div>
-              <div className="text-[11px] opacity-90">อัตรา ฿{waterRate}/หน่วย</div>
-              <div className="text-lg font-bold">{totalUnits} หน่วย</div>
-            </div>
-          </div>
+        <div className="flex items-center gap-3">
           <div className="text-right">
-            <div className="text-[11px] opacity-90">ยอดรวมค่าน้ำ</div>
-            <div className="text-2xl font-bold">฿{totalCost.toLocaleString()}</div>
+            <div className="text-xs text-gray-500">ยอดรวมทั้งหมด</div>
+            <div className="text-2xl font-bold text-blue-600">฿{allCost.toLocaleString()}</div>
+            <div className="text-[10px] text-gray-400">{allUnits} หน่วย</div>
           </div>
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            className="px-5 py-2.5 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition shadow-sm disabled:opacity-50"
+          >
+            {saving ? '⏳ กำลังบันทึก...' : saved ? '✅ บันทึกแล้ว' : '💾 บันทึก'}
+          </button>
         </div>
       </div>
 
-      {/* House section */}
-      <div>
-        <div className="flex items-center gap-2 mb-3">
-          <span className="text-base font-bold text-gray-700">🏠 บ้านพักครู</span>
-          <span className="text-xs text-gray-400">({houses.length} หน่วย)</span>
-        </div>
-        <div className="space-y-2">
-          {houses.map(r => <ResidentRow key={r.id} r={r} />)}
-        </div>
-      </div>
-
-      {/* Flat section */}
-      <div>
-        <div className="flex items-center gap-2 mb-3">
-          <span className="text-base font-bold text-gray-700">🏢 แฟลต</span>
-          <span className="text-xs text-gray-400">({flats.length} หน่วย)</span>
-        </div>
-        <div className="space-y-2">
-          {flats.map(r => <ResidentRow key={r.id} r={r} />)}
-        </div>
-      </div>
+      {renderTable('🏠 บ้านพักครู', houses)}
+      {renderTable('🏢 แฟลต', flats)}
     </div>
   );
 }
@@ -985,8 +997,8 @@ function ElectricityRecordPage() {
     })();
   }, []);
 
-  const houses = MOCK_RESIDENTS.filter(r => r.type === 'house' && !r.vacant);
-  const flats = MOCK_RESIDENTS.filter(r => r.type === 'flat' && !r.vacant);
+  const houses = MOCK_RESIDENTS.filter(r => r.type === 'house');
+  const flats = MOCK_RESIDENTS.filter(r => r.type === 'flat');
 
   const getCost = (id: string) => {
     const val = parseFloat(readings[id] || '');
@@ -997,17 +1009,11 @@ function ElectricityRecordPage() {
     return { units, raw, rounded, valid: true };
   };
 
-  const allFilled = [...houses, ...flats].every(r => readings[r.id] && getCost(r.id).valid);
-  const totalUnits = [...houses, ...flats].reduce((s, r) => s + getCost(r.id).units, 0);
   const totalCollected = [...houses, ...flats].reduce((s, r) => s + getCost(r.id).rounded, 0);
   const peaTotalNum = parseFloat(peaTotal) || 0;
   const difference = totalCollected - peaTotalNum;
 
   const handleSave = async () => {
-    if (!allFilled) {
-      alert('กรุณากรอกหน่วยไฟให้ครบทุกหน่วย');
-      return;
-    }
     setSaving(true);
     await new Promise(r => setTimeout(r, 500));
     setSaved(true);
@@ -1015,139 +1021,139 @@ function ElectricityRecordPage() {
     setTimeout(() => setSaved(false), 3000);
   };
 
-  const ResidentRow = ({ r }: { r: typeof MOCK_RESIDENTS[0] }) => {
-    const cost = getCost(r.id);
-    const isEmpty = !readings[r.id];
-    
+  const renderTable = (title: string, residents: typeof MOCK_RESIDENTS) => {
+    const totalUnits = residents.reduce((s, r) => s + getCost(r.id).units, 0);
+    const totalCost = residents.reduce((s, r) => s + getCost(r.id).rounded, 0);
+
     return (
-      <div className={`flex items-center gap-3 p-3 rounded-lg border ${isEmpty ? 'border-yellow-200 bg-yellow-50/30' : 'border-gray-100 bg-white'} hover:shadow-sm transition`}>
-        <div className="flex-shrink-0 w-12">
-          <div className="text-xs font-bold text-gray-500">{r.id}</div>
-        </div>
-        <div className="flex-1 min-w-0">
-          <div className="text-sm font-medium text-gray-800 truncate">{r.name}</div>
-        </div>
-        <div className="flex items-center gap-3">
-          <div className="relative">
-            <input
-              type="text"
-              inputMode="numeric"
-              pattern="[0-9]*"
-              value={readings[r.id] || ''}
-              onChange={e => {
-                const v = e.target.value.replace(/[^0-9]/g, '');
-                setReadings(prev => ({ ...prev, [r.id]: v }));
-              }}
-              className={`w-24 px-3 py-2 text-center text-base font-mono border-2 rounded-lg focus:outline-none ${
-                isEmpty ? 'border-yellow-400 bg-white focus:border-yellow-600' : 'border-gray-200 focus:border-yellow-500'
-              }`}
-              placeholder="หน่วย"
-            />
+      <div className="mb-6">
+        <h3 className="text-base font-bold text-gray-800 mb-3">{title}</h3>
+        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm border-collapse">
+              <thead>
+                <tr className="bg-gradient-to-r from-yellow-50 to-orange-50 border-b-2 border-yellow-200">
+                  <th className="text-center px-3 py-3 font-bold text-gray-700 border-r border-gray-200 w-16">เลขที่</th>
+                  <th className="text-left px-3 py-3 font-bold text-gray-700 border-r border-gray-200">ชื่อผู้พักอาศัย</th>
+                  <th className="text-center px-3 py-3 font-bold text-gray-700 border-r border-gray-200 w-32">มิเตอร์ล่าสุด</th>
+                  <th className="text-center px-3 py-3 font-bold text-gray-700 border-r border-gray-200 w-24">หน่วย</th>
+                  <th className="text-right px-3 py-3 font-bold text-gray-700 w-28">ค่าไฟ (฿)</th>
+                </tr>
+              </thead>
+              <tbody>
+                {residents.map((r, idx) => {
+                  const cost = getCost(r.id);
+                  return (
+                    <tr key={r.id} className={`border-b border-gray-100 ${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'} hover:bg-yellow-50/30 transition`}>
+                      <td className="text-center px-3 py-2.5 font-mono text-gray-600 border-r border-gray-100">{r.id}</td>
+                      <td className="px-3 py-2.5 text-gray-800 border-r border-gray-100">{r.name}</td>
+                      <td className="text-center px-2 py-1.5 border-r border-gray-100">
+                        <input
+                          type="text"
+                          inputMode="numeric"
+                          pattern="[0-9]*"
+                          value={readings[r.id] || ''}
+                          onChange={e => {
+                            const v = e.target.value.replace(/[^0-9]/g, '');
+                            setReadings(prev => ({ ...prev, [r.id]: v }));
+                          }}
+                          className="w-full px-2 py-1.5 text-center font-mono border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent"
+                          placeholder="หน่วย"
+                        />
+                      </td>
+                      <td className="text-center px-3 py-2.5 font-mono font-medium text-gray-700 border-r border-gray-100">
+                        {cost.valid ? cost.units : '—'}
+                      </td>
+                      <td className="text-right px-3 py-2.5 font-bold text-yellow-600">
+                        {cost.valid ? `฿${cost.rounded.toLocaleString()}` : '—'}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+              <tfoot>
+                <tr className="bg-gradient-to-r from-yellow-100 to-orange-100 border-t-2 border-yellow-300 font-bold">
+                  <td colSpan={3} className="text-right px-3 py-3 text-gray-800">รวม</td>
+                  <td className="text-center px-3 py-3 font-mono text-lg text-gray-800 border-r border-yellow-200">{totalUnits}</td>
+                  <td className="text-right px-3 py-3 text-lg text-yellow-700">฿{totalCost.toLocaleString()}</td>
+                </tr>
+              </tfoot>
+            </table>
           </div>
-          {cost.valid ? (
-            <div className="w-24 text-right">
-              <div className="text-sm font-bold text-yellow-600">฿{cost.rounded.toLocaleString()}</div>
-              <div className="text-[10px] text-gray-400">{cost.units} หน่วย</div>
-            </div>
-          ) : (
-            <div className="w-24 text-right text-gray-300 text-sm">—</div>
-          )}
         </div>
       </div>
     );
   };
 
+  const allUnits = [...houses, ...flats].reduce((s, r) => s + getCost(r.id).units, 0);
+
   return (
-    <div className="max-w-3xl space-y-5">
+    <div className="space-y-5">
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-xl font-bold text-gray-800">⚡ บันทึกค่าไฟ</h2>
-          <p className="text-xs text-gray-400 mt-0.5">กรอกจำนวนหน่วยไฟ (ตัวเลขเต็ม ปัดเศษขึ้นอัตโนมัติ)</p>
+          <p className="text-xs text-gray-500 mt-1">อัตราค่าไฟ: <span className="font-bold text-yellow-600">฿{elecRate}/หน่วย</span></p>
         </div>
-        <button
-          onClick={handleSave}
-          disabled={saving || !allFilled}
-          className={`px-5 py-2.5 text-sm font-medium rounded-lg transition shadow-sm ${
-            allFilled ? 'bg-yellow-500 text-white hover:bg-yellow-600' : 'bg-gray-200 text-gray-400 cursor-not-allowed'
-          }`}
-        >
-          {saving ? '⏳ กำลังบันทึก...' : saved ? '✅ บันทึกแล้ว' : '💾 บันทึก'}
-        </button>
-      </div>
-
-      {/* Summary bar */}
-      <div className="bg-gradient-to-r from-yellow-500 to-orange-500 rounded-xl p-4 text-white shadow-lg">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center text-lg">⚡</div>
-            <div>
-              <div className="text-[11px] opacity-90">อัตรา ฿{elecRate}/หน่วย</div>
-              <div className="text-lg font-bold">{totalUnits} หน่วย</div>
-            </div>
-          </div>
+        <div className="flex items-center gap-3">
           <div className="text-right">
-            <div className="text-[11px] opacity-90">ยอดเรียกเก็บ (ปัดเศษ)</div>
-            <div className="text-2xl font-bold">฿{totalCollected.toLocaleString()}</div>
+            <div className="text-xs text-gray-500">ยอดเรียกเก็บ</div>
+            <div className="text-2xl font-bold text-yellow-600">฿{totalCollected.toLocaleString()}</div>
+            <div className="text-[10px] text-gray-400">{allUnits} หน่วย</div>
           </div>
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            className="px-5 py-2.5 text-sm font-medium bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition shadow-sm disabled:opacity-50"
+          >
+            {saving ? '⏳ กำลังบันทึก...' : saved ? '✅ บันทึกแล้ว' : '💾 บันทึก'}
+          </button>
         </div>
       </div>
 
-      {/* House section */}
-      <div>
-        <div className="flex items-center gap-2 mb-3">
-          <span className="text-base font-bold text-gray-700">🏠 บ้านพักครู</span>
-          <span className="text-xs text-gray-400">({houses.length} หน่วย)</span>
-        </div>
-        <div className="space-y-2">
-          {houses.map(r => <ResidentRow key={r.id} r={r} />)}
-        </div>
-      </div>
+      {renderTable('🏠 บ้านพักครู', houses)}
+      {renderTable('🏢 แฟลต', flats)}
 
-      {/* Flat section */}
-      <div>
-        <div className="flex items-center gap-2 mb-3">
-          <span className="text-base font-bold text-gray-700">🏢 แฟลต</span>
-          <span className="text-xs text-gray-400">({flats.length} หน่วย)</span>
-        </div>
-        <div className="space-y-2">
-          {flats.map(r => <ResidentRow key={r.id} r={r} />)}
-        </div>
-      </div>
-
-      {/* PEA Total Input */}
-      <div className="bg-white rounded-xl border-2 border-blue-200 p-4">
-        <label className="block text-sm font-bold text-gray-700 mb-2">💡 ยอดค่าไฟจากการไฟฟ้า (PEA)</label>
-        <input
-          type="text"
-          inputMode="decimal"
-          value={peaTotal}
-          onChange={e => {
-            const v = e.target.value.replace(/[^0-9.]/g, '');
-            setPeaTotal(v);
-          }}
-          className="w-full max-w-xs px-4 py-3 text-lg font-mono border-2 border-gray-200 rounded-lg focus:outline-none focus:border-blue-500"
-          placeholder="0.00"
-        />
-        
-        {/* Difference calculation */}
-        {peaTotal && (
-          <div className="mt-4 p-3 bg-gray-50 rounded-lg">
-            <div className="flex justify-between items-center mb-2 text-sm">
-              <span className="text-gray-600">ยอดเรียกเก็บ (ปัดเศษขึ้น)</span>
-              <span className="font-bold">฿{totalCollected.toLocaleString()}</span>
-            </div>
-            <div className="flex justify-between items-center mb-2 text-sm">
-              <span className="text-gray-600">ยอด PEA</span>
-              <span className="font-bold">฿{peaTotalNum.toLocaleString()}</span>
-            </div>
-            <div className="border-t border-gray-200 pt-2 mt-2 flex justify-between items-center">
-              <span className="font-bold text-gray-700">ส่วนต่าง (ได้จากการปัดเศษ)</span>
-              <span className={`text-xl font-bold ${difference >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                {difference >= 0 ? '+' : ''}฿{difference.toLocaleString()}
-              </span>
-            </div>
+      {/* PEA Total & Difference */}
+      <div className="bg-white rounded-xl border-2 border-blue-200 p-5">
+        <h3 className="text-base font-bold text-gray-800 mb-4">💡 ยอดค่าไฟจากการไฟฟ้า (PEA)</h3>
+        <div className="flex items-end gap-4">
+          <div className="flex-1 max-w-xs">
+            <label className="block text-xs text-gray-500 mb-2">กรอกยอดค่าไฟจากบิล PEA</label>
+            <input
+              type="text"
+              inputMode="decimal"
+              value={peaTotal}
+              onChange={e => {
+                const v = e.target.value.replace(/[^0-9.]/g, '');
+                setPeaTotal(v);
+              }}
+              className="w-full px-4 py-3 text-xl font-mono border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="0.00"
+            />
           </div>
-        )}
+          
+          {peaTotal && (
+            <div className="flex-1 p-4 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-lg border border-blue-200">
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm text-gray-600">
+                  <span>ยอดเรียกเก็บ (ปัดเศษขึ้น)</span>
+                  <span className="font-bold">฿{totalCollected.toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between text-sm text-gray-600">
+                  <span>ยอด PEA</span>
+                  <span className="font-bold">฿{peaTotalNum.toLocaleString()}</span>
+                </div>
+                <div className="border-t border-blue-200 pt-2 flex justify-between items-center">
+                  <span className="font-bold text-gray-800">ส่วนต่าง</span>
+                  <span className={`text-2xl font-bold ${difference >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    {difference >= 0 ? '+' : ''}฿{difference.toLocaleString()}
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+        <p className="text-[10px] text-gray-400 mt-2">* ส่วนต่าง = ยอดเรียกเก็บ(ปัดขึ้น) − ยอดจากบิล PEA</p>
       </div>
     </div>
   );
