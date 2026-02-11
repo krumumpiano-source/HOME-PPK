@@ -31,21 +31,16 @@ export default function App() {
     try {
       setIsLoading(true);
       
-      // Check if API is configured
-      if (GAS_API_CONFIG.SCRIPT_ID === 'YOUR_SCRIPT_ID_HERE') {
-        setError(`❌ API Configuration Error: Please set SCRIPT_ID in frontend/src/config.ts`);
-        setIsLoading(false);
-        return;
-      }
-
-      // Try to load test data
-      const response = await getAllUsers();
-      
-      if (response.success) {
-        console.log('✓ API Connection Successful');
-        console.log('Users found:', response.data?.length || 0);
-      } else {
-        console.warn('API returned error:', response.error);
+      // Check if API is reachable
+      try {
+        const response = await getAllUsers();
+        if (response.success) {
+          console.log('✓ API Connection Successful');
+        } else {
+          console.warn('API returned error:', response.error);
+        }
+      } catch (apiErr) {
+        console.warn('API not reachable yet, continuing...', apiErr);
       }
     } catch (err: any) {
       setError(`Connection Error: ${err.message}`);
@@ -101,15 +96,11 @@ export default function App() {
           <LoginForm onLogin={handleLogin} isLoading={isLoading} />
 
           <div className="mt-8 p-4 bg-blue-50 rounded-lg text-sm text-gray-600 border border-blue-200">
-            <p className="font-bold mb-2">🔧 {t('messages.loading')}</p>
-            <p className="mb-2">Test Credentials:</p>
+            <p className="font-bold mb-2">� ข้อมูลเข้าสู่ระบบ</p>
             <code className="block bg-white p-2 rounded border text-xs mb-2">
-              Email: admin@test.com<br/>
-              Pass: admin123
+              Email: pongsatorn.b@ppk.ac.th<br/>
+              Pass: ppk2569
             </code>
-            <p className="text-xs text-gray-500 mt-2">
-              Or use resident@test.com / resident123
-            </p>
           </div>
         </div>
       </div>
@@ -200,8 +191,8 @@ export default function App() {
  */
 function LoginForm({ onLogin, isLoading }: any) {
   const { t } = useTranslation();
-  const [email, setEmail] = useState('admin@test.com');
-  const [password, setPassword] = useState('admin123');
+  const [email, setEmail] = useState('pongsatorn.b@ppk.ac.th');
+  const [password, setPassword] = useState('ppk2569');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

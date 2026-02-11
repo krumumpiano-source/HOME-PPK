@@ -7,18 +7,37 @@ const router = Router();
 let users = [
   {
     id: '1',
-    email: 'admin@test.com',
-    password: 'admin123',
-    name: 'Admin',
+    email: 'pongsatorn.b@ppk.ac.th',
+    password: 'ppk2569',
+    name: 'พงศธร',
+    surname: 'โพธิแก้ว',
+    Title: 'ครู',
+    Name: 'พงศธร',
+    Surname: 'โพธิแก้ว',
     role: 'admin',
     status: 'active',
     createdAt: new Date()
   },
   {
     id: '2',
+    email: 'admin@test.com',
+    password: 'admin123',
+    name: 'Admin',
+    Title: '',
+    Name: 'Admin',
+    Surname: 'User',
+    role: 'admin',
+    status: 'active',
+    createdAt: new Date()
+  },
+  {
+    id: '3',
     email: 'resident@test.com',
     password: 'resident123',
     name: 'Resident User',
+    Title: '',
+    Name: 'Resident',
+    Surname: 'User',
     role: 'resident',
     status: 'active',
     createdAt: new Date()
@@ -68,6 +87,9 @@ router.post('/login', (req, res) => {
           id: user.id,
           email: user.email,
           name: user.name,
+          Title: user.Title || '',
+          Name: user.Name || user.name,
+          Surname: user.Surname || '',
           role: user.role
         }
       }
