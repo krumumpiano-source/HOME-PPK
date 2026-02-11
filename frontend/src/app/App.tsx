@@ -111,23 +111,23 @@ export default function App() {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       {/* Header */}
-      <header className="bg-white shadow-sm sticky top-0 z-40">
+      <header className="bg-gradient-to-r from-blue-700 to-blue-500 shadow-lg sticky top-0 z-40">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <div>
-            <h2 className="text-2xl font-bold text-blue-600">{t('common.appName')}</h2>
-            <p className="text-sm text-gray-500">{t('common.appTitle')}</p>
+          <div className="text-white">
+            <h2 className="text-2xl font-bold">{t('common.appName')}</h2>
+            <p className="text-sm text-blue-100">{t('common.appTitle')}</p>
           </div>
           <div className="flex items-center gap-4">
             <LanguageSwitcher />
-            <div className="text-right">
-              <p className="font-medium text-gray-800">
+            <div className="text-right text-white">
+              <p className="font-medium">
                 {currentUser.Title}{currentUser.Name} {currentUser.Surname}
               </p>
-              <p className="text-sm text-gray-500">{currentUser.Role}</p>
+              <p className="text-sm text-blue-200">{currentUser.role === 'admin' ? 'ผู้ดูแลระบบ' : 'ผู้พักอาศัย'}</p>
             </div>
             <button
               onClick={handleLogout}
-              className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
+              className="px-4 py-2 bg-white/20 text-white rounded-lg hover:bg-white/30 transition border border-white/30"
             >
               {t('common.logout')}
             </button>
@@ -136,53 +136,122 @@ export default function App() {
       </header>
 
       {/* Main Content */}
-      <main className="container mx-auto px-4 py-8 flex-1">
-        <div className="bg-white rounded-xl shadow p-8 text-center">
-          <h3 className="text-2xl font-bold text-gray-800 mb-4">
-            {t('dashboard.welcome')}
+      <main className="container mx-auto px-4 py-6 flex-1">
+        {/* Welcome Banner */}
+        <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
+          <h3 className="text-xl font-bold text-gray-800">
+            สวัสดี, {currentUser.Title}{currentUser.Name} {currentUser.Surname}
           </h3>
-          <p className="text-gray-600 mb-8">
-            {t('common.appTitle')}
-          </p>
+          <p className="text-gray-500 text-sm mt-1">{formatDateThaiWithDayName(new Date())}</p>
+        </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="p-6 bg-blue-50 rounded-lg">
-              <div className="text-3xl mb-2">💳</div>
-              <h4 className="font-bold text-gray-800">{t('bills.title')}</h4>
-              <p className="text-sm text-gray-600 mt-2">{t('bills.list')}</p>
-            </div>
-            <div className="p-6 bg-green-50 rounded-lg">
-              <div className="text-3xl mb-2">💧</div>
-              <h4 className="font-bold text-gray-800">{t('utilities.waterReading')}</h4>
-              <p className="text-sm text-gray-600 mt-2">{t('utilities.submit')}</p>
-            </div>
-            <div className="p-6 bg-yellow-50 rounded-lg">
-              <div className="text-3xl mb-2">⚡</div>
-              <h4 className="font-bold text-gray-800">{t('utilities.electricReading')}</h4>
-              <p className="text-sm text-gray-600 mt-2">{t('utilities.submit')}</p>
-            </div>
+        {/* === Section: การเงินและการชำระ === */}
+        <div className="mb-6">
+          <h4 className="text-lg font-bold text-gray-700 mb-3 flex items-center gap-2">
+            <span className="w-1 h-6 bg-blue-500 rounded-full"></span>
+            การเงินและการชำระ
+          </h4>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+            <MenuCard icon="💳" title="ยอดชำระ / ส่งสลิป" subtitle="ชำระค่าบ้านพักและส่งหลักฐาน" color="blue" />
+            <MenuCard icon="📋" title="แจ้งยอดชำระประจำเดือน" subtitle="แจ้งยอดบิลรายเดือน" color="indigo" />
+            <MenuCard icon="📜" title="ประวัติการชำระ" subtitle="ดูรายการชำระย้อนหลัง" color="purple" />
+            <MenuCard icon="✅" title="ตรวจสลิป" subtitle="ตรวจสอบหลักฐานการโอน" color="green" />
           </div>
+        </div>
 
-          <div className="mt-8 p-6 bg-amber-50 border border-amber-200 rounded-lg">
-            <h4 className="font-bold text-amber-800 mb-2">📝 Note</h4>
-            <p className="text-sm text-amber-700 mb-2">
-              {t('common.appTitle')} v1.0.0
-            </p>
-            <p className="text-sm text-amber-700">
-              ออกแบบและพัฒนาโดย ครูพงศธร โพธิแก้ว
-            </p>
+        {/* === Section: บันทึกค่าน้ำ-ไฟ === */}
+        <div className="mb-6">
+          <h4 className="text-lg font-bold text-gray-700 mb-3 flex items-center gap-2">
+            <span className="w-1 h-6 bg-cyan-500 rounded-full"></span>
+            บันทึกค่าน้ำ-ไฟ
+          </h4>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+            <MenuCard icon="💧" title="บันทึกค่าน้ำ" subtitle="บันทึกมิเตอร์น้ำประจำเดือน" color="cyan" />
+            <MenuCard icon="⚡" title="บันทึกค่าไฟ" subtitle="บันทึกมิเตอร์ไฟประจำเดือน" color="yellow" />
+          </div>
+        </div>
+
+        {/* === Section: คำร้องและแบบฟอร์ม === */}
+        <div className="mb-6">
+          <h4 className="text-lg font-bold text-gray-700 mb-3 flex items-center gap-2">
+            <span className="w-1 h-6 bg-orange-500 rounded-full"></span>
+            คำร้องและแบบฟอร์ม
+          </h4>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+            <MenuCard icon="🔧" title="แจ้งซ่อม / คำร้อง" subtitle="แจ้งปัญหาหรือยื่นคำร้อง" color="orange" />
+            <MenuCard icon="📝" title="แบบฟอร์ม" subtitle="กรอกแบบฟอร์มเอกสารต่าง ๆ" color="amber" />
+            <MenuCard icon="📬" title="คำร้องและการจัดคิว" subtitle="จัดการคิวคำร้อง (แอดมิน)" color="rose" />
+          </div>
+        </div>
+
+        {/* === Section: การเงินและบัญชี === */}
+        <div className="mb-6">
+          <h4 className="text-lg font-bold text-gray-700 mb-3 flex items-center gap-2">
+            <span className="w-1 h-6 bg-emerald-500 rounded-full"></span>
+            การเงินและบัญชี
+          </h4>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+            <MenuCard icon="📊" title="บัญชีรายรับรายจ่าย" subtitle="สรุปรายรับ-รายจ่ายทั้งหมด" color="emerald" />
+            <MenuCard icon="💰" title="ค่าใช้จ่ายอื่น ๆ" subtitle="รายการค่าใช้จ่ายเพิ่มเติม" color="teal" />
+            <MenuCard icon="💸" title="เบิกจ่าย" subtitle="การเบิกจ่ายงบประมาณ" color="lime" />
+          </div>
+        </div>
+
+        {/* === Section: ระเบียบ ข้อมูลส่วนตัว และตั้งค่า === */}
+        <div className="mb-6">
+          <h4 className="text-lg font-bold text-gray-700 mb-3 flex items-center gap-2">
+            <span className="w-1 h-6 bg-gray-500 rounded-full"></span>
+            ตั้งค่าและอื่น ๆ
+          </h4>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+            <MenuCard icon="📖" title="ระเบียบ / ประกาศ" subtitle="ระเบียบข้อบังคับและประกาศ" color="slate" />
+            <MenuCard icon="👤" title="ข้อมูลส่วนตัว" subtitle="ดูและแก้ไขโปรไฟล์ผู้ใช้" color="sky" />
+            <MenuCard icon="⚙️" title="ตั้งค่าแอดมิน" subtitle="จัดการการตั้งค่าระบบ" color="gray" />
           </div>
         </div>
       </main>
 
       {/* Footer */}
-      <footer className="bg-white border-t border-gray-200 mt-8">
-        <div className="container mx-auto px-4 py-6 text-center text-sm text-gray-600">
-          <p>{t('common.appName')} v1.0.0 | {t('common.appTitle')} | {formatDateThaiWithDayName(new Date())}</p>
+      <footer className="bg-white border-t border-gray-200">
+        <div className="container mx-auto px-4 py-4 text-center text-sm text-gray-500">
+          <p>{t('common.appName')} v1.0.0 | {t('common.appTitle')}</p>
           <p className="text-xs mt-1">ออกแบบและพัฒนาโดย ครูพงศธร โพธิแก้ว</p>
         </div>
       </footer>
     </div>
+  );
+}
+
+/**
+ * Menu Card Component
+ */
+function MenuCard({ icon, title, subtitle, color }: { icon: string; title: string; subtitle: string; color: string }) {
+  const colorMap: Record<string, string> = {
+    blue: 'bg-blue-50 hover:bg-blue-100 border-blue-200',
+    indigo: 'bg-indigo-50 hover:bg-indigo-100 border-indigo-200',
+    purple: 'bg-purple-50 hover:bg-purple-100 border-purple-200',
+    green: 'bg-green-50 hover:bg-green-100 border-green-200',
+    cyan: 'bg-cyan-50 hover:bg-cyan-100 border-cyan-200',
+    yellow: 'bg-yellow-50 hover:bg-yellow-100 border-yellow-200',
+    orange: 'bg-orange-50 hover:bg-orange-100 border-orange-200',
+    amber: 'bg-amber-50 hover:bg-amber-100 border-amber-200',
+    rose: 'bg-rose-50 hover:bg-rose-100 border-rose-200',
+    emerald: 'bg-emerald-50 hover:bg-emerald-100 border-emerald-200',
+    teal: 'bg-teal-50 hover:bg-teal-100 border-teal-200',
+    lime: 'bg-lime-50 hover:bg-lime-100 border-lime-200',
+    slate: 'bg-slate-50 hover:bg-slate-100 border-slate-200',
+    sky: 'bg-sky-50 hover:bg-sky-100 border-sky-200',
+    gray: 'bg-gray-50 hover:bg-gray-100 border-gray-200',
+  };
+
+  return (
+    <button
+      className={`p-4 rounded-xl border text-left transition-all duration-200 cursor-pointer hover:shadow-md ${colorMap[color] || colorMap.blue}`}
+    >
+      <div className="text-3xl mb-2">{icon}</div>
+      <h5 className="font-bold text-gray-800 text-sm leading-tight">{title}</h5>
+      <p className="text-xs text-gray-500 mt-1 leading-tight">{subtitle}</p>
+    </button>
   );
 }
 
