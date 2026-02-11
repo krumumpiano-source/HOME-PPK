@@ -919,12 +919,12 @@ function WaterRecordPage() {
             <table className="w-full text-sm border-collapse">
               <thead>
                 <tr className="bg-gradient-to-r from-blue-50 to-cyan-50 border-b-2 border-blue-200">
-                  <th className="text-center px-2 py-3 font-bold text-gray-700 border-r border-gray-200 w-16">เลขที่</th>
-                  <th className="text-left px-3 py-3 font-bold text-gray-700 border-r border-gray-200">ชื่อผู้พักอาศัย</th>
+                  <th className="text-center px-2 py-3 font-bold text-gray-700 border-r border-gray-200 w-14">เลขที่</th>
+                  <th className="text-left px-2 py-3 font-bold text-gray-700 border-r border-gray-200 w-48">ชื่อผู้พักอาศัย</th>
                   <th className="text-center px-2 py-3 font-bold text-gray-700 border-r border-gray-200 w-28">เลขมิเตอร์ก่อนหน้า</th>
                   <th className="text-center px-2 py-3 font-bold text-gray-700 border-r border-gray-200 w-28">เลขมิเตอร์ล่าสุด</th>
                   <th className="text-center px-2 py-3 font-bold text-gray-700 border-r border-gray-200 w-20">หน่วย</th>
-                  <th className="text-right px-4 py-3 font-bold text-gray-700 w-32">รวมค่าน้ำ</th>
+                  <th className="text-right px-3 py-3 font-bold text-gray-700 w-28">รวมค่าน้ำ</th>
                 </tr>
               </thead>
               <tbody>
@@ -934,7 +934,7 @@ function WaterRecordPage() {
                   return (
                     <tr key={r.id} className={`border-b border-gray-100 ${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'} hover:bg-blue-50/30 transition`}>
                       <td className="text-center px-2 py-2.5 font-mono text-gray-600 border-r border-gray-100">{r.id}</td>
-                      <td className="px-3 py-2.5 text-gray-800 border-r border-gray-100">{r.name}</td>
+                      <td className="px-2 py-2.5 text-gray-800 border-r border-gray-100 max-w-[192px] truncate" title={r.name}>{r.name}</td>
                       <td className="text-center px-1 py-1.5 border-r border-gray-100">
                         {editMode ? (
                           <input
@@ -969,7 +969,7 @@ function WaterRecordPage() {
                       <td className="text-center px-2 py-2.5 font-mono font-medium text-gray-700 border-r border-gray-100">
                         {usage.valid ? usage.units : '—'}
                       </td>
-                      <td className="text-right px-4 py-2.5 font-bold text-blue-600">
+                      <td className="text-right px-3 py-2.5 font-bold text-blue-600">
                         {usage.valid ? `฿${usage.cost.toLocaleString()}` : '—'}
                       </td>
                     </tr>
@@ -1163,11 +1163,11 @@ function ElectricityRecordPage() {
             <table className="w-full text-sm border-collapse">
               <thead>
                 <tr className="bg-gradient-to-r from-yellow-50 to-orange-50 border-b-2 border-yellow-200">
-                  <th className="text-center px-2 py-3 font-bold text-gray-700 border-r border-gray-200 w-16">เลขที่</th>
-                  <th className="text-left px-3 py-3 font-bold text-gray-700 border-r border-gray-200">ชื่อผู้พักอาศัย</th>
+                  <th className="text-center px-2 py-3 font-bold text-gray-700 border-r border-gray-200 w-14">เลขที่</th>
+                  <th className="text-left px-2 py-3 font-bold text-gray-700 border-r border-gray-200 w-48">ชื่อผู้พักอาศัย</th>
                   <th className="text-center px-2 py-3 font-bold text-gray-700 border-r border-gray-200 w-28">มิเตอร์ล่าสุด</th>
                   <th className="text-center px-2 py-3 font-bold text-gray-700 border-r border-gray-200 w-20">หน่วย</th>
-                  <th className="text-right px-4 py-3 font-bold text-gray-700 w-32">ค่าไฟ (฿)</th>
+                  <th className="text-right px-3 py-3 font-bold text-gray-700 w-28">ค่าไฟ (฿)</th>
                 </tr>
               </thead>
               <tbody>
@@ -1176,7 +1176,7 @@ function ElectricityRecordPage() {
                   return (
                     <tr key={r.id} className={`border-b border-gray-100 ${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'} hover:bg-yellow-50/30 transition`}>
                       <td className="text-center px-2 py-2.5 font-mono text-gray-600 border-r border-gray-100">{r.id}</td>
-                      <td className="px-3 py-2.5 text-gray-800 border-r border-gray-100">{r.name}</td>
+                      <td className="px-2 py-2.5 text-gray-800 border-r border-gray-100 max-w-[192px] truncate" title={r.name}>{r.name}</td>
                       <td className="text-center px-1 py-1.5 border-r border-gray-100">
                         <input
                           type="text"
@@ -1194,7 +1194,7 @@ function ElectricityRecordPage() {
                       <td className="text-center px-2 py-2.5 font-mono font-medium text-gray-700 border-r border-gray-100">
                         {cost.valid ? cost.units : '—'}
                       </td>
-                      <td className="text-right px-4 py-2.5 font-bold text-yellow-600">
+                      <td className="text-right px-3 py-2.5 font-bold text-yellow-600">
                         {cost.valid ? `฿${cost.rounded.toLocaleString()}` : '—'}
                       </td>
                     </tr>
