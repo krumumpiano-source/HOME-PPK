@@ -813,26 +813,24 @@ function PaymentHistoryPage({ user }: { user: any }) {
 }
 
 // ============ Water Record Page (บันทึกค่าน้ำ) ============
-// Mock residents data (in production, fetch from API / admin settings)
 const MOCK_RESIDENTS = [
-  { id: 'H01', name: 'สมชาย', surname: 'ใจดี', type: 'house', prevWater: 1520, prevElec: 3200 },
-  { id: 'H02', name: 'วิไล', surname: 'สุขสม', type: 'house', prevWater: 980, prevElec: 2800 },
-  { id: 'H03', name: 'ประสิทธิ์', surname: 'ดีงาม', type: 'house', prevWater: 1200, prevElec: 1500 },
-  { id: 'H04', name: '—', surname: '—', type: 'house', prevWater: 0, prevElec: 0, vacant: true },
-  { id: 'F01', name: 'สมหญิง', surname: 'สุขใจ', type: 'flat', prevWater: 450, prevElec: 1100 },
-  { id: 'F02', name: 'วราภรณ์', surname: 'แก้วมณี', type: 'flat', prevWater: 520, prevElec: 900 },
-  { id: 'F03', name: 'อนุชา', surname: 'พงษ์ศรี', type: 'flat', prevWater: 380, prevElec: 750 },
-  { id: 'F04', name: '—', surname: '—', type: 'flat', prevWater: 0, prevElec: 0, vacant: true },
+  { id: 'H01', name: 'สมชาย ใจดี', type: 'house', prevWater: 1520, prevElec: 3200 },
+  { id: 'H02', name: 'วิไล สุขสม', type: 'house', prevWater: 980, prevElec: 2800 },
+  { id: 'H03', name: 'ประสิทธิ์ ดีงาม', type: 'house', prevWater: 1200, prevElec: 1500 },
+  { id: 'H04', name: 'ว่าง', type: 'house', prevWater: 0, prevElec: 0, vacant: true },
+  { id: 'F01', name: 'สมหญิง สุขใจ', type: 'flat', prevWater: 450, prevElec: 1100 },
+  { id: 'F02', name: 'วราภรณ์ แก้วมณี', type: 'flat', prevWater: 520, prevElec: 900 },
+  { id: 'F03', name: 'อนุชา พงษ์ศรี', type: 'flat', prevWater: 380, prevElec: 750 },
+  { id: 'F04', name: 'ว่าง', type: 'flat', prevWater: 0, prevElec: 0, vacant: true },
 ];
 
 function WaterRecordPage() {
   const [readings, setReadings] = useState<Record<string, string>>({});
-  const [waterRate, setWaterRate] = useState(18); // default, admin can change
+  const [waterRate, setWaterRate] = useState(18);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 
   useEffect(() => {
-    // Try to load water rate from admin settings
     (async () => {
       try {
         const res = await callGasApi('admin/settings');
@@ -841,106 +839,127 @@ function WaterRecordPage() {
     })();
   }, []);
 
-  const houses = MOCK_RESIDENTS.filter(r => r.type === 'house');
-  const flats = MOCK_RESIDENTS.filter(r => r.type === 'flat');
+  const houses = MOCK_RESIDENTS.filter(r => r.type === 'house' && !r.vacant);
+  const flats = MOCK_RESIDENTS.filter(r => r.type === 'flat' && !r.vacant);
 
   const getUsage = (id: string, prev: number) => {
     const current = parseInt(readings[id] || '');
-    if (isNaN(current) || current < prev) return { units: 0, cost: 0 };
+    if (isNaN(current) || current < prev) return { units: 0, cost: 0, valid: false };
     const units = current - prev;
-    return { units, cost: units * waterRate };
+    return { units, cost: units * waterRate, valid: true };
   };
 
+  const allFilled = [...houses, ...flats].every(r => readings[r.id] && getUsage(r.id, r.prevWater).valid);
+  const totalUnits = [...houses, ...flats].reduce((s, r) => s + getUsage(r.id, r.prevWater).units, 0);
+  const totalCost = [...houses, ...flats].reduce((s, r) => s + getUsage(r.id, r.prevWater).cost, 0);
+
   const handleSave = async () => {
+    if (!allFilled) {
+      alert('กรุณากรอกมิเตอร์ให้ครบทุกหน่วย');
+      return;
+    }
     setSaving(true);
-    // In production, save to API
     await new Promise(r => setTimeout(r, 500));
     setSaved(true);
     setSaving(false);
     setTimeout(() => setSaved(false), 3000);
   };
 
-  const renderTable = (title: string, residents: typeof MOCK_RESIDENTS) => (
-    <div className="mb-6">
-      <h3 className="text-sm font-bold text-gray-700 mb-2">{title}</h3>
-      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="bg-gray-50 border-b border-gray-200">
-                <th className="text-left px-3 py-2.5 text-[11px] font-semibold text-gray-500 w-16">รหัสบ้าน</th>
-                <th className="text-left px-3 py-2.5 text-[11px] font-semibold text-gray-500">ชื่อ-นามสกุล</th>
-                <th className="text-right px-3 py-2.5 text-[11px] font-semibold text-gray-500 w-24">มิเตอร์เดิม</th>
-                <th className="text-center px-3 py-2.5 text-[11px] font-semibold text-gray-500 w-28">มิเตอร์ล่าสุด</th>
-                <th className="text-right px-3 py-2.5 text-[11px] font-semibold text-gray-500 w-16">หน่วย</th>
-                <th className="text-right px-3 py-2.5 text-[11px] font-semibold text-gray-500 w-24">ค่าน้ำ (฿)</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-50">
-              {residents.map(r => {
-                const usage = getUsage(r.id, r.prevWater);
-                return (
-                  <tr key={r.id} className={`${r.vacant ? 'bg-gray-50/50 opacity-60' : 'hover:bg-blue-50/30'} transition`}>
-                    <td className="px-3 py-2 font-mono text-xs text-gray-600">{r.id}</td>
-                    <td className="px-3 py-2 text-gray-700">
-                      {r.vacant ? <span className="text-gray-400 italic">ว่าง</span> : `${r.name} ${r.surname}`}
-                    </td>
-                    <td className="px-3 py-2 text-right font-mono text-gray-500">{r.prevWater}</td>
-                    <td className="px-3 py-2 text-center">
-                      {r.vacant ? (
-                        <span className="text-gray-300">—</span>
-                      ) : (
-                        <input
-                          type="number"
-                          value={readings[r.id] || ''}
-                          onChange={e => setReadings(prev => ({ ...prev, [r.id]: e.target.value }))}
-                          className="w-full border border-gray-200 rounded px-2 py-1 text-sm text-center focus:outline-none focus:ring-1 focus:ring-blue-400 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                          placeholder="—"
-                          min={r.prevWater}
-                        />
-                      )}
-                    </td>
-                    <td className="px-3 py-2 text-right font-mono text-gray-600">{readings[r.id] ? usage.units : '—'}</td>
-                    <td className="px-3 py-2 text-right font-bold text-blue-600">{readings[r.id] ? `฿${usage.cost.toLocaleString()}` : '—'}</td>
-                  </tr>
-                );
-              })}
-            </tbody>
-            <tfoot>
-              <tr className="bg-blue-50/50 border-t border-gray-200">
-                <td colSpan={4} className="px-3 py-2 text-right text-xs font-bold text-gray-600">รวม</td>
-                <td className="px-3 py-2 text-right font-mono font-bold text-gray-700">
-                  {residents.reduce((s, r) => s + getUsage(r.id, r.prevWater).units, 0)}
-                </td>
-                <td className="px-3 py-2 text-right font-bold text-blue-700">
-                  ฿{residents.reduce((s, r) => s + getUsage(r.id, r.prevWater).cost, 0).toLocaleString()}
-                </td>
-              </tr>
-            </tfoot>
-          </table>
+  const ResidentRow = ({ r }: { r: typeof MOCK_RESIDENTS[0] }) => {
+    const usage = getUsage(r.id, r.prevWater);
+    const isEmpty = !readings[r.id];
+    
+    return (
+      <div className={`flex items-center gap-3 p-3 rounded-lg border ${isEmpty ? 'border-blue-200 bg-blue-50/30' : 'border-gray-100 bg-white'} hover:shadow-sm transition`}>
+        <div className="flex-shrink-0 w-12">
+          <div className="text-xs font-bold text-gray-500">{r.id}</div>
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="text-sm font-medium text-gray-800 truncate">{r.name}</div>
+          <div className="text-[11px] text-gray-400">เดิม: {r.prevWater}</div>
+        </div>
+        <div className="flex items-center gap-3">
+          <div className="relative">
+            <input
+              type="number"
+              value={readings[r.id] || ''}
+              onChange={e => setReadings(prev => ({ ...prev, [r.id]: e.target.value }))}
+              className={`w-24 px-3 py-2 text-center text-base font-mono border-2 rounded-lg focus:outline-none ${
+                isEmpty ? 'border-blue-400 bg-white focus:border-blue-600' : 'border-gray-200 focus:border-blue-500'
+              } [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
+              placeholder="กรอก"
+              min={r.prevWater}
+            />
+          </div>
+          {usage.valid ? (
+            <div className="w-24 text-right">
+              <div className="text-sm font-bold text-blue-600">฿{usage.cost.toLocaleString()}</div>
+              <div className="text-[10px] text-gray-400">{usage.units} หน่วย</div>
+            </div>
+          ) : (
+            <div className="w-24 text-right text-gray-300 text-sm">—</div>
+          )}
         </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   return (
-    <div className="space-y-4">
+    <div className="max-w-3xl space-y-5">
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-bold text-gray-800">💧 บันทึกค่าน้ำ</h2>
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-gray-400">อัตราค่าน้ำ: ฿{waterRate}/หน่วย</span>
-          <button
-            onClick={handleSave}
-            disabled={saving}
-            className="px-4 py-1.5 text-xs bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50"
-          >
-            {saving ? 'กำลังบันทึก...' : saved ? '✅ บันทึกแล้ว' : '💾 บันทึก'}
-          </button>
+        <div>
+          <h2 className="text-xl font-bold text-gray-800">💧 บันทึกค่าน้ำ</h2>
+          <p className="text-xs text-gray-400 mt-0.5">กรอกเลขมิเตอร์ล่าสุดของแต่ละหน่วย</p>
+        </div>
+        <button
+          onClick={handleSave}
+          disabled={saving || !allFilled}
+          className={`px-5 py-2.5 text-sm font-medium rounded-lg transition shadow-sm ${
+            allFilled ? 'bg-blue-600 text-white hover:bg-blue-700' : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+          }`}
+        >
+          {saving ? '⏳ กำลังบันทึก...' : saved ? '✅ บันทึกแล้ว' : '💾 บันทึก'}
+        </button>
+      </div>
+
+      {/* Summary bar */}
+      <div className="bg-gradient-to-r from-blue-500 to-cyan-500 rounded-xl p-4 text-white shadow-lg">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center text-lg">💧</div>
+            <div>
+              <div className="text-[11px] opacity-90">อัตรา ฿{waterRate}/หน่วย</div>
+              <div className="text-lg font-bold">{totalUnits} หน่วย</div>
+            </div>
+          </div>
+          <div className="text-right">
+            <div className="text-[11px] opacity-90">ยอดรวมค่าน้ำ</div>
+            <div className="text-2xl font-bold">฿{totalCost.toLocaleString()}</div>
+          </div>
         </div>
       </div>
 
-      {renderTable('🏠 บ้านพักครู', houses)}
-      {renderTable('🏢 แฟลต', flats)}
+      {/* House section */}
+      <div>
+        <div className="flex items-center gap-2 mb-3">
+          <span className="text-base font-bold text-gray-700">🏠 บ้านพักครู</span>
+          <span className="text-xs text-gray-400">({houses.length} หน่วย)</span>
+        </div>
+        <div className="space-y-2">
+          {houses.map(r => <ResidentRow key={r.id} r={r} />)}
+        </div>
+      </div>
+
+      {/* Flat section */}
+      <div>
+        <div className="flex items-center gap-2 mb-3">
+          <span className="text-base font-bold text-gray-700">🏢 แฟลต</span>
+          <span className="text-xs text-gray-400">({flats.length} หน่วย)</span>
+        </div>
+        <div className="space-y-2">
+          {flats.map(r => <ResidentRow key={r.id} r={r} />)}
+        </div>
+      </div>
     </div>
   );
 }
@@ -950,11 +969,8 @@ function ElectricityRecordPage() {
   const [readings, setReadings] = useState<Record<string, string>>({});
   const [elecRate, setElecRate] = useState(7.5);
   const [peaTotal, setPeaTotal] = useState('');
-  const [lostHouse, setLostHouse] = useState('');
-  const [lostFlat, setLostFlat] = useState('');
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
-  const VACANT_FEE = 9; // ค่าอ่านมิเตอร์ 9 บาท
 
   useEffect(() => {
     (async () => {
@@ -965,26 +981,29 @@ function ElectricityRecordPage() {
     })();
   }, []);
 
-  const houses = MOCK_RESIDENTS.filter(r => r.type === 'house');
-  const flats = MOCK_RESIDENTS.filter(r => r.type === 'flat');
+  const houses = MOCK_RESIDENTS.filter(r => r.type === 'house' && !r.vacant);
+  const flats = MOCK_RESIDENTS.filter(r => r.type === 'flat' && !r.vacant);
 
-  const getCost = (id: string, resident: typeof MOCK_RESIDENTS[0]) => {
-    if (resident.vacant) return { amount: VACANT_FEE, rounded: VACANT_FEE };
+  const getCost = (id: string) => {
     const val = parseFloat(readings[id] || '');
-    if (isNaN(val)) return { amount: 0, rounded: 0 };
-    const raw = val * elecRate;
+    if (isNaN(val)) return { units: 0, raw: 0, rounded: 0, valid: false };
+    const units = Math.ceil(val);
+    const raw = units * elecRate;
     const rounded = Math.ceil(raw);
-    return { amount: raw, rounded };
+    return { units, raw, rounded, valid: true };
   };
 
-  const allResidents = [...houses, ...flats];
-  const totalCollected = allResidents.reduce((s, r) => s + getCost(r.id, r).rounded, 0);
+  const allFilled = [...houses, ...flats].every(r => readings[r.id] && getCost(r.id).valid);
+  const totalUnits = [...houses, ...flats].reduce((s, r) => s + getCost(r.id).units, 0);
+  const totalCollected = [...houses, ...flats].reduce((s, r) => s + getCost(r.id).rounded, 0);
   const peaTotalNum = parseFloat(peaTotal) || 0;
-  const lostHouseNum = parseFloat(lostHouse) || 0;
-  const lostFlatNum = parseFloat(lostFlat) || 0;
-  const roundingDiff = totalCollected - peaTotalNum;
+  const difference = totalCollected - peaTotalNum;
 
   const handleSave = async () => {
+    if (!allFilled) {
+      alert('กรุณากรอกหน่วยไฟให้ครบทุกหน่วย');
+      return;
+    }
     setSaving(true);
     await new Promise(r => setTimeout(r, 500));
     setSaved(true);
@@ -992,172 +1011,145 @@ function ElectricityRecordPage() {
     setTimeout(() => setSaved(false), 3000);
   };
 
-  const renderTable = (title: string, residents: typeof MOCK_RESIDENTS) => (
-    <div className="mb-6">
-      <h3 className="text-sm font-bold text-gray-700 mb-2">{title}</h3>
-      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="bg-gray-50 border-b border-gray-200">
-                <th className="text-left px-3 py-2.5 text-[11px] font-semibold text-gray-500 w-16">รหัสบ้าน</th>
-                <th className="text-left px-3 py-2.5 text-[11px] font-semibold text-gray-500">ชื่อ-นามสกุล</th>
-                <th className="text-center px-3 py-2.5 text-[11px] font-semibold text-gray-500 w-28">ค่าไฟ (หน่วย)</th>
-                <th className="text-right px-3 py-2.5 text-[11px] font-semibold text-gray-500 w-24">ยอดเงิน (฿)</th>
-                <th className="text-right px-3 py-2.5 text-[11px] font-semibold text-gray-500 w-24">ปัดขึ้น (฿)</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-50">
-              {residents.map(r => {
-                const cost = getCost(r.id, r);
-                return (
-                  <tr key={r.id} className={`${r.vacant ? 'bg-gray-50/50' : 'hover:bg-yellow-50/30'} transition`}>
-                    <td className="px-3 py-2 font-mono text-xs text-gray-600">{r.id}</td>
-                    <td className="px-3 py-2 text-gray-700">
-                      {r.vacant ? (
-                        <span className="text-gray-400 italic">ว่าง <span className="text-[10px]">(ค่าอ่านมิเตอร์ ฿{VACANT_FEE})</span></span>
-                      ) : `${r.name} ${r.surname}`}
-                    </td>
-                    <td className="px-3 py-2 text-center">
-                      {r.vacant ? (
-                        <span className="text-gray-300">—</span>
-                      ) : (
-                        <input
-                          type="number"
-                          value={readings[r.id] || ''}
-                          onChange={e => {
-                            const v = e.target.value;
-                            // Allow only integers - round up if decimal
-                            if (v.includes('.')) {
-                              setReadings(prev => ({ ...prev, [r.id]: Math.ceil(parseFloat(v)).toString() }));
-                            } else {
-                              setReadings(prev => ({ ...prev, [r.id]: v }));
-                            }
-                          }}
-                          onBlur={e => {
-                            const v = parseFloat(e.target.value);
-                            if (!isNaN(v) && v !== Math.ceil(v)) {
-                              setReadings(prev => ({ ...prev, [r.id]: Math.ceil(v).toString() }));
-                            }
-                          }}
-                          className="w-full border border-gray-200 rounded px-2 py-1 text-sm text-center focus:outline-none focus:ring-1 focus:ring-yellow-400 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                          placeholder="หน่วย"
-                          min="0"
-                          step="1"
-                        />
-                      )}
-                    </td>
-                    <td className="px-3 py-2 text-right font-mono text-gray-500 text-xs">
-                      {r.vacant ? `${VACANT_FEE}.00` : (readings[r.id] ? cost.amount.toFixed(2) : '—')}
-                    </td>
-                    <td className="px-3 py-2 text-right font-bold text-yellow-600">
-                      {r.vacant ? `฿${VACANT_FEE}` : (readings[r.id] ? `฿${cost.rounded.toLocaleString()}` : '—')}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-            <tfoot>
-              <tr className="bg-yellow-50/50 border-t border-gray-200">
-                <td colSpan={3} className="px-3 py-2 text-right text-xs font-bold text-gray-600">รวม</td>
-                <td className="px-3 py-2 text-right text-xs font-mono text-gray-500">
-                  {residents.reduce((s, r) => s + getCost(r.id, r).amount, 0).toFixed(2)}
-                </td>
-                <td className="px-3 py-2 text-right font-bold text-yellow-700">
-                  ฿{residents.reduce((s, r) => s + getCost(r.id, r).rounded, 0).toLocaleString()}
-                </td>
-              </tr>
-            </tfoot>
-          </table>
+  const ResidentRow = ({ r }: { r: typeof MOCK_RESIDENTS[0] }) => {
+    const cost = getCost(r.id);
+    const isEmpty = !readings[r.id];
+    
+    return (
+      <div className={`flex items-center gap-3 p-3 rounded-lg border ${isEmpty ? 'border-yellow-200 bg-yellow-50/30' : 'border-gray-100 bg-white'} hover:shadow-sm transition`}>
+        <div className="flex-shrink-0 w-12">
+          <div className="text-xs font-bold text-gray-500">{r.id}</div>
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="text-sm font-medium text-gray-800 truncate">{r.name}</div>
+        </div>
+        <div className="flex items-center gap-3">
+          <div className="relative">
+            <input
+              type="number"
+              value={readings[r.id] || ''}
+              onChange={e => {
+                const v = e.target.value;
+                if (v.includes('.')) {
+                  setReadings(prev => ({ ...prev, [r.id]: Math.ceil(parseFloat(v)).toString() }));
+                } else {
+                  setReadings(prev => ({ ...prev, [r.id]: v }));
+                }
+              }}
+              onBlur={e => {
+                const v = parseFloat(e.target.value);
+                if (!isNaN(v) && v !== Math.ceil(v)) {
+                  setReadings(prev => ({ ...prev, [r.id]: Math.ceil(v).toString() }));
+                }
+              }}
+              className={`w-24 px-3 py-2 text-center text-base font-mono border-2 rounded-lg focus:outline-none ${
+                isEmpty ? 'border-yellow-400 bg-white focus:border-yellow-600' : 'border-gray-200 focus:border-yellow-500'
+              } [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
+              placeholder="หน่วย"
+              min="0"
+              step="1"
+            />
+          </div>
+          {cost.valid ? (
+            <div className="w-24 text-right">
+              <div className="text-sm font-bold text-yellow-600">฿{cost.rounded.toLocaleString()}</div>
+              <div className="text-[10px] text-gray-400">{cost.units} หน่วย</div>
+            </div>
+          ) : (
+            <div className="w-24 text-right text-gray-300 text-sm">—</div>
+          )}
         </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   return (
-    <div className="space-y-4">
+    <div className="max-w-3xl space-y-5">
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-bold text-gray-800">⚡ บันทึกค่าไฟ</h2>
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-gray-400">อัตราค่าไฟ: ฿{elecRate}/หน่วย</span>
-          <button
-            onClick={handleSave}
-            disabled={saving}
-            className="px-4 py-1.5 text-xs bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition disabled:opacity-50"
-          >
-            {saving ? 'กำลังบันทึก...' : saved ? '✅ บันทึกแล้ว' : '💾 บันทึก'}
-          </button>
+        <div>
+          <h2 className="text-xl font-bold text-gray-800">⚡ บันทึกค่าไฟ</h2>
+          <p className="text-xs text-gray-400 mt-0.5">กรอกจำนวนหน่วยไฟ (ตัวเลขเต็ม ปัดเศษขึ้นอัตโนมัติ)</p>
+        </div>
+        <button
+          onClick={handleSave}
+          disabled={saving || !allFilled}
+          className={`px-5 py-2.5 text-sm font-medium rounded-lg transition shadow-sm ${
+            allFilled ? 'bg-yellow-500 text-white hover:bg-yellow-600' : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+          }`}
+        >
+          {saving ? '⏳ กำลังบันทึก...' : saved ? '✅ บันทึกแล้ว' : '💾 บันทึก'}
+        </button>
+      </div>
+
+      {/* Summary bar */}
+      <div className="bg-gradient-to-r from-yellow-500 to-orange-500 rounded-xl p-4 text-white shadow-lg">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center text-lg">⚡</div>
+            <div>
+              <div className="text-[11px] opacity-90">อัตรา ฿{elecRate}/หน่วย</div>
+              <div className="text-lg font-bold">{totalUnits} หน่วย</div>
+            </div>
+          </div>
+          <div className="text-right">
+            <div className="text-[11px] opacity-90">ยอดเรียกเก็บ (ปัดเศษ)</div>
+            <div className="text-2xl font-bold">฿{totalCollected.toLocaleString()}</div>
+          </div>
         </div>
       </div>
 
-      <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-xs text-amber-700">
-        <p className="font-medium">📌 หมายเหตุ:</p>
-        <p>• กรอกตัวเลขหน่วยค่าไฟเท่านั้น (จำนวนเต็ม ปัดเศษขึ้นอัตโนมัติ)</p>
-        <p>• หน่วยพักอาศัยที่ไม่มีผู้พักอาศัย คิดค่าอ่านมิเตอร์จากการไฟฟ้า ฿{VACANT_FEE}</p>
+      {/* House section */}
+      <div>
+        <div className="flex items-center gap-2 mb-3">
+          <span className="text-base font-bold text-gray-700">🏠 บ้านพักครู</span>
+          <span className="text-xs text-gray-400">({houses.length} หน่วย)</span>
+        </div>
+        <div className="space-y-2">
+          {houses.map(r => <ResidentRow key={r.id} r={r} />)}
+        </div>
       </div>
 
-      {renderTable('🏠 บ้านพักครู', houses)}
-      {renderTable('🏢 แฟลต', flats)}
-
-      {/* Bottom 3 fields + difference */}
-      <div className="bg-white rounded-xl border border-gray-200 p-4 space-y-4">
-        <h3 className="text-sm font-bold text-gray-700">📊 สรุปค่าไฟและส่วนต่าง</h3>
-
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <div>
-            <label className="block text-[11px] font-medium text-gray-500 mb-1">1. ยอดค่าไฟรวมจากการไฟฟ้า (฿)</label>
-            <input
-              type="number"
-              value={peaTotal}
-              onChange={e => setPeaTotal(e.target.value)}
-              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-              placeholder="0"
-            />
-          </div>
-          <div>
-            <label className="block text-[11px] font-medium text-gray-500 mb-1">2. Lost บ้านพักครู (฿)</label>
-            <input
-              type="number"
-              value={lostHouse}
-              onChange={e => setLostHouse(e.target.value)}
-              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-              placeholder="0"
-            />
-          </div>
-          <div>
-            <label className="block text-[11px] font-medium text-gray-500 mb-1">3. Lost แฟลต (฿)</label>
-            <input
-              type="number"
-              value={lostFlat}
-              onChange={e => setLostFlat(e.target.value)}
-              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-              placeholder="0"
-            />
-          </div>
+      {/* Flat section */}
+      <div>
+        <div className="flex items-center gap-2 mb-3">
+          <span className="text-base font-bold text-gray-700">🏢 แฟลต</span>
+          <span className="text-xs text-gray-400">({flats.length} หน่วย)</span>
         </div>
-
-        {/* Auto calculated summary */}
-        <div className="bg-gray-50 rounded-lg p-3 space-y-2">
-          <div className="flex justify-between text-sm">
-            <span className="text-gray-500">ยอดค่าไฟจากการไฟฟ้า</span>
-            <span className="font-medium">฿{peaTotalNum.toLocaleString()}</span>
-          </div>
-          <div className="flex justify-between text-sm">
-            <span className="text-gray-500">ยอดเรียกเก็บทั้งหมด (ปัดเศษขึ้น)</span>
-            <span className="font-medium">฿{totalCollected.toLocaleString()}</span>
-          </div>
-          <div className="flex justify-between text-sm">
-            <span className="text-gray-500">Lost บ้านพักครู + แฟลต</span>
-            <span className="font-medium">฿{(lostHouseNum + lostFlatNum).toLocaleString()}</span>
-          </div>
-          <div className="border-t border-gray-200 pt-2 flex justify-between text-sm">
-            <span className="font-bold text-gray-700">💡 ส่วนต่างจากการปัดเศษ</span>
-            <span className={`font-bold text-lg ${roundingDiff >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-              {roundingDiff >= 0 ? '+' : ''}฿{roundingDiff.toLocaleString()}
-            </span>
-          </div>
+        <div className="space-y-2">
+          {flats.map(r => <ResidentRow key={r.id} r={r} />)}
         </div>
-        <p className="text-[10px] text-gray-400">* ส่วนต่าง = ยอดเรียกเก็บ(ปัดขึ้น) − ยอดจากการไฟฟ้า</p>
+      </div>
+
+      {/* PEA Total Input */}
+      <div className="bg-white rounded-xl border-2 border-blue-200 p-4">
+        <label className="block text-sm font-bold text-gray-700 mb-2">💡 ยอดค่าไฟจากการไฟฟ้า (PEA)</label>
+        <input
+          type="number"
+          value={peaTotal}
+          onChange={e => setPeaTotal(e.target.value)}
+          className="w-full max-w-xs px-4 py-3 text-lg font-mono border-2 border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+          placeholder="0.00"
+        />
+        
+        {/* Difference calculation */}
+        {peaTotal && (
+          <div className="mt-4 p-3 bg-gray-50 rounded-lg">
+            <div className="flex justify-between items-center mb-2 text-sm">
+              <span className="text-gray-600">ยอดเรียกเก็บ (ปัดเศษขึ้น)</span>
+              <span className="font-bold">฿{totalCollected.toLocaleString()}</span>
+            </div>
+            <div className="flex justify-between items-center mb-2 text-sm">
+              <span className="text-gray-600">ยอด PEA</span>
+              <span className="font-bold">฿{peaTotalNum.toLocaleString()}</span>
+            </div>
+            <div className="border-t border-gray-200 pt-2 mt-2 flex justify-between items-center">
+              <span className="font-bold text-gray-700">ส่วนต่าง (ได้จากการปัดเศษ)</span>
+              <span className={`text-xl font-bold ${difference >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                {difference >= 0 ? '+' : ''}฿{difference.toLocaleString()}
+              </span>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
